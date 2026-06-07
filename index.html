@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>⚡ ROI Agent Studio</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--card:#161b22;--card2:#1c2129;--border:#30363d;
+  --blue:#1f6feb;--green:#238636;--red:#da3633;--orange:#f0883e;--purple:#8957e5;
+  --text:#e6edf3;--text2:#8b949e;--text3:#484f58;
+  --radius:10px;--shadow:0 2px 8px rgba(0,0,0,.4);
+}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ── Security Gate ── */
+#securityGate{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px;transition:opacity .4s}
+#securityGate.hidden{opacity:0;pointer-events:none}
+#securityGate h1{font-size:2.4rem;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#securityGate .gate-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:40px;text-align:center;max-width:420px;width:90%}
+#securityGate input{width:100%;padding:12px 16px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:1rem;margin:16px 0;text-align:center;letter-spacing:2px}
+#securityGate .gate-btn{width:100%;padding:12px;border:none;border-radius:8px;background:var(--blue);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s}
+#securityGate .gate-btn:hover{background:#388bfd}
+#securityGate .gate-err{color:var(--red);font-size:.85rem;min-height:20px}
+#securityGate .lock-icon{font-size:3rem;margin-bottom:8px}
+
+/* ── Topbar ── */
+#topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:56px;background:linear-gradient(90deg,#161b22,#1c2129);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+#topbar .brand{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px}
+#topbar .brand span{background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#topbar .actions{display:flex;align-items:center;gap:12px}
+.icon-btn{background:var(--card);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:8px 14px;cursor:pointer;font-size:.9rem;transition:all .2s;display:flex;align-items:center;gap:6px}
+.icon-btn:hover{border-color:var(--blue);color:var(--text)}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);width:540px;max-width:94vw;max-height:85vh;overflow-y:auto;padding:28px}
+.modal h2{margin-bottom:18px;font-size:1.2rem;display:flex;align-items:center;gap:8px}
+.modal label{display:block;font-size:.82rem;color:var(--text2);margin-bottom:4px;margin-top:14px}
+.modal input,.modal textarea,.modal select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit}
+.modal textarea{resize:vertical;min-height:60px}
+.modal-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
+.btn{padding:10px 22px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#388bfd}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#2ea043}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#e5534b}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--text2)}.btn-ghost:hover{border-color:var(--text2);color:var(--text)}
+.btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#d29922}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:6px;padding:16px 24px 0;background:var(--bg)}
+.tab-btn{padding:10px 22px;border:none;border-radius:24px;background:var(--card);color:var(--text2);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid transparent}
+.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab-btn:hover:not(.active){border-color:var(--border);color:var(--text)}
+.tab-panel{display:none;padding:24px}
+.tab-panel.active{display:block}
+
+/* ── Pipeline Steps ── */
+.pipeline{display:flex;align-items:center;gap:0;margin-bottom:28px;padding:0 8px;flex-wrap:wrap}
+.pipe-step{display:flex;align-items:center;gap:8px;padding:10px 18px;border-radius:24px;font-size:.85rem;font-weight:600;color:var(--text3);background:var(--card);border:1px solid var(--border);transition:all .3s;cursor:default}
+.pipe-step.active{color:#fff;background:var(--blue);border-color:var(--blue)}
+.pipe-step.done{color:var(--green);border-color:var(--green);background:rgba(35,134,54,.1)}
+.pipe-arrow{color:var(--text3);font-size:1.1rem;margin:0 4px}
+
+/* ── Form Grid ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-grid .full{grid-column:1/-1}
+.field label{display:block;font-size:.82rem;color:var(--text2);margin-bottom:4px;font-weight:600}
+.field input,.field select,.field textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;font-family:inherit}
+.field textarea{resize:vertical;min-height:70px}
+
+/* ── Cards ── */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+.kpi-card .kpi-val{font-size:1.8rem;font-weight:700;font-family:'SF Mono','Fira Code',monospace;margin:6px 0}
+.kpi-card .kpi-label{font-size:.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+.kpi-card.blue .kpi-val{color:var(--blue)}
+.kpi-card.green .kpi-val{color:var(--green)}
+.kpi-card.orange .kpi-val{color:var(--orange)}
+.kpi-card.purple .kpi-val{color:var(--purple)}
+
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.info-card h3{font-size:1rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
+/* ── Blueprint cards ── */
+.bp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+.bp-card{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.bp-card .bp-val{font-size:1.3rem;font-weight:700;font-family:'SF Mono',monospace;color:var(--blue);margin:4px 0}
+.bp-card .bp-lbl{font-size:.75rem;color:var(--text2);text-transform:uppercase}
+
+/* ── Review ── */
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.review-grid .review-section{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.review-grid .review-section h3{margin-bottom:14px;font-size:1rem}
+.review-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.review-row:last-child{border:none}
+.review-row .rl{color:var(--text2)}
+.review-row .rv{font-weight:600;font-family:'SF Mono',monospace}
+
+/* ── Provision Steps ── */
+.prov-steps{display:flex;flex-direction:column;gap:14px;max-width:600px}
+.prov-step{display:flex;align-items:center;gap:14px;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:.9rem}
+.prov-step .prov-icon{font-size:1.3rem;width:32px;text-align:center}
+.prov-step.pending .prov-icon{color:var(--text3)}
+.prov-step.running .prov-icon{color:var(--orange)}
+.prov-step.done .prov-icon{color:var(--green)}
+.prov-step.error .prov-icon{color:var(--red)}
+.prov-step .prov-detail{font-size:.78rem;color:var(--text2);margin-top:2px}
+
+/* ── Table ── */
+.data-table{width:100%;border-collapse:collapse;font-size:.85rem;background:var(--card);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border)}
+.data-table th{background:var(--card2);padding:12px 14px;text-align:left;color:var(--text2);font-weight:600;text-transform:uppercase;font-size:.75rem;letter-spacing:.5px;cursor:pointer;user-select:none;white-space:nowrap}
+.data-table th:hover{color:var(--text)}
+.data-table td{padding:10px 14px;border-top:1px solid var(--border);white-space:nowrap}
+.data-table tr:hover td{background:rgba(31,111,235,.05)}
+.badge{padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600;display:inline-block}
+.badge-blue{background:rgba(31,111,235,.15);color:var(--blue)}
+.badge-green{background:rgba(35,134,54,.15);color:var(--green)}
+.badge-orange{background:rgba(210,153,34,.15);color:var(--orange)}
+.badge-purple{background:rgba(137,87,229,.15);color:var(--purple)}
+.badge-red{background:rgba(218,54,51,.15);color:var(--red)}
+
+/* ── Hub Cards ── */
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.hub-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:border-color .2s}
+.hub-card:hover{border-color:var(--blue)}
+.hub-card h4{font-size:1rem;margin-bottom:8px}
+.hub-card .hub-meta{font-size:.8rem;color:var(--text2);margin-bottom:12px;display:flex;flex-direction:column;gap:4px}
+.hub-card .hub-actions{display:flex;gap:8px;margin-top:10px}
+
+/* ── Toast ── */
+#toastContainer{position:fixed;top:70px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:8px;font-size:.88rem;font-weight:500;animation:slideIn .3s;max-width:400px;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow)}
+.toast-success{background:var(--green);color:#fff}
+.toast-error{background:var(--red);color:#fff}
+.toast-info{background:var(--blue);color:#fff}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── AI Box ── */
+.ai-box{background:var(--card);border:1px solid var(--purple);border-radius:var(--radius);padding:20px;margin-top:16px;white-space:pre-wrap;font-size:.88rem;line-height:1.7}
+.ai-box h3{color:var(--purple);margin-bottom:10px}
+
+/* ── Validate ── */
+.validate-card{background:var(--card);border:2px solid var(--green);border-radius:var(--radius);padding:28px;text-align:center;max-width:600px;margin:0 auto}
+.validate-card .big-check{font-size:3.5rem;margin-bottom:10px}
+.validate-card h2{margin-bottom:6px}
+.validate-card .links{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+/* ── Spinner ── */
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-center{display:flex;justify-content:center;padding:60px}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  .form-grid,.review-grid{grid-template-columns:1fr}
+  .pipeline{gap:4px;justify-content:center}
+  .pipe-step{padding:8px 12px;font-size:.78rem}
+  .tab-bar{flex-wrap:wrap}
+  #topbar{padding:0 12px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ SECURITY GATE ═══════ -->
+<div id="securityGate">
+  <div class="gate-box">
+    <div class="lock-icon">🔒</div>
+    <h1>ROI Agent Studio</h1>
+    <p style="color:var(--text2);margin-top:8px">Enter passphrase to continue</p>
+    <input type="password" id="gateInput" placeholder="••••••••" autofocus/>
+    <button class="gate-btn" onclick="checkGate()">Unlock</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<!-- ═══════ TOPBAR ═══════ -->
+<div id="topbar" style="display:none">
+  <div class="brand">⚡ <span>ROI Agent Studio</span></div>
+  <div class="actions">
+    <button class="icon-btn" onclick="openModal('configModal')">⚙️ Settings</button>
+  </div>
+</div>
+
+<!-- ═══════ SETTINGS MODAL ═══════ -->
+<div class="modal-overlay" id="configModal">
+  <div class="modal">
+    <h2>⚙️ Configuration</h2>
+    <label>Supabase URL</label>
+    <input id="cfgSupaUrl" value="https://riufaqbdfxerrcsuutzh.supabase.co"/>
+    <label>Supabase Anon Key</label>
+    <input id="cfgSupaKey" type="password"/>
+    <label>GitHub Personal Access Token</label>
+    <input id="cfgGhToken" type="password"/>
+    <label>Anthropic API Key</label>
+    <input id="cfgAnthropicKey" type="password"/>
+    <label>AI Worker URL</label>
+    <input id="cfgWorkerUrl" value="https://roi-ai-advisor.xujefferson.workers.dev"/>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('configModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveConfig()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ TOAST ═══════ -->
+<div id="toastContainer"></div>
+
+<!-- ═══════ MAIN ═══════ -->
+<div id="mainApp" style="display:none">
+
+  <!-- TABS -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('studio')">🤖 ROI Studio</button>
+    <button class="tab-btn" onclick="switchTab('portfolio')">📊 Portfolio</button>
+    <button class="tab-btn" onclick="switchTab('hub')">🛠 Hub Manager</button>
+  </div>
+
+  <!-- ═══════ TAB: ROI STUDIO ═══════ -->
+  <div class="tab-panel active" id="tab-studio">
+
+    <!-- Pipeline indicator -->
+    <div class="pipeline" id="pipelineBar">
+      <div class="pipe-step active" data-step="0">1️⃣ Intake</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step" data-step="1">2️⃣ Blueprint</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step" data-step="2">3️⃣ Review</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step" data-step="3">4️⃣ Provision</div>
+      <span class="pipe-arrow">→</span>
+      <div class="pipe-step" data-step="4">5️⃣ Validate</div>
+    </div>
+
+    <!-- STEP 0: INTAKE -->
+    <div class="step-panel" id="step-0">
+      <div class="info-card">
+        <h3>📋 Product Intake</h3>
+        <div class="form-grid">
+          <div class="field"><label>Product Name *</label><input id="fProductName" placeholder="e.g. UltraFlex Plus"/></div>
+          <div class="field"><label>Hub Name (slug)</label><input id="fHubName" placeholder="auto-generated" readonly style="color:var(--text2)"/></div>
+          <div class="field"><label>Phase</label>
+            <select id="fPhase"><option>Concept</option><option>Feasibility</option><option selected>Development</option><option>Launch</option><option>Mature</option></select>
+          </div>
+          <div class="field"><label>Owner</label><input id="fOwner" value="Jefferson Xu"/></div>
+          <div class="field"><label>Domain</label>
+            <select id="fDomain"><option selected>Semiconductor</option><option>Industrial</option><option>Robotics</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Dev Cost ($)</label><input id="fDevCost" type="number" placeholder="e.g. 5000000"/></div>
+          <div class="field"><label>Peak Annual Units</label><input id="fPeakUnits" type="number" placeholder="e.g. 500"/></div>
+          <div class="field"><label>ASP ($)</label><input id="fASP" type="number" placeholder="e.g. 120000"/></div>
+          <div class="field"><label>COGS (%)</label><input id="fCOGS" type="number" placeholder="e.g. 40" value="40"/></div>
+          <div class="field"><label>Ramp Years</label><input id="fRamp" type="number" placeholder="e.g. 3" value="3"/></div>
+          <div class="field full"><label>Notes</label><textarea id="fNotes" placeholder="Additional context, assumptions, market notes..."></textarea></div>
+        </div>
+        <div style="margin-top:20px;text-align:right">
+          <button class="btn btn-primary" onclick="goToBlueprint()">Next → Blueprint</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 1: BLUEPRINT -->
+    <div class="step-panel" id="step-1" style="display:none">
+      <div class="info-card">
+        <h3>🧠 AI Financial Blueprint</h3>
+        <p style="color:var(--text2);margin-bottom:16px">Generating 5-year financial projections using Claude AI...</p>
+        <div id="blueprintLoading" class="loading-center"><div class="spinner" style="width:36px;height:36px;border-width:3px"></div></div>
+        <div id="blueprintResult" style="display:none">
+          <div class="bp-grid" id="bpKPIGrid"></div>
+          <div class="ai-box" id="bpDetail"></div>
+        </div>
+        <div style="margin-top:20px;text-align:right">
+          <button class="btn btn-ghost" onclick="goStep(0)">← Back</button>
+          <button class="btn btn-primary" id="bpNextBtn" disabled onclick="goStep(2)">Next → Review</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: REVIEW -->
+    <div class="step-panel" id="step-2" style="display:none">
+      <div class="info-card">
+        <h3>✅ Review &amp; Approve</h3>
+        <div class="review-grid">
+          <div class="review-section">
+            <h3>📋 Intake Data</h3>
+            <div id="reviewIntake"></div>
+          </div>
+          <div class="review-section">
+            <h3>🧠 Blueprint Summary</h3>
+            <div id="reviewBlueprint"></div>
+          </div>
+        </div>
+        <div style="margin-top:20px;text-align:right">
+          <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+          <button class="btn btn-green" onclick="goStep(3)">✅ Approve &amp; Provision</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: PROVISION -->
+    <div class="step-panel" id="step-3" style="display:none">
+      <div class="info-card">
+        <h3>🚀 Provisioning</h3>
+        <div class="prov-steps" id="provSteps">
+          <div class="prov-step pending" id="prov-0">
+            <div class="prov-icon">⏳</div>
+            <div><strong>Save to Supabase</strong><div class="prov-detail">Inserting into product_roi table...</div></div>
+          </div>
+          <div class="prov-step pending" id="prov-1">
+            <div class="prov-icon">⏳</div>
+            <div><strong>Create GitHub Repo</strong><div class="prov-detail">Creating repository under xujeffersoninusa...</div></div>
+          </div>
+          <div class="prov-step pending" id="prov-2">
+            <div class="prov-icon">⏳</div>
+            <div><strong>Upload ROI Hub Template</strong><div class="prov-detail">Fetching template &amp; pushing index.html...</div></div>
+          </div>
+          <div class="prov-step pending" id="prov-3">
+            <div class="prov-icon">⏳</div>
+            <div><strong>Enable GitHub Pages</strong><div class="prov-detail">Activating Pages on main branch...</div></div>
+          </div>
+        </div>
+        <div style="margin-top:20px;text-align:right">
+          <button class="btn btn-primary" id="provNextBtn" disabled onclick="goStep(4)">Next → Validate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: VALIDATE -->
+    <div class="step-panel" id="step-4" style="display:none">
+      <div class="validate-card" id="validateCard">
+        <div class="big-check">🎉</div>
+        <h2>Provisioning Complete!</h2>
+        <p style="color:var(--text2);margin:8px 0" id="validateMsg">Your ROI Hub is live and ready.</p>
+        <div class="links" id="validateLinks"></div>
+        <div style="margin-top:24px">
+          <button class="btn btn-primary" onclick="resetStudio()">🔄 Start New Product</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════ TAB: PORTFOLIO ═══════ -->
+  <div class="tab-panel" id="tab-portfolio">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <h2 style="font-size:1.3rem">📊 Portfolio Overview</h2>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="loadPortfolio()">🔄 Refresh</button>
+        <button class="btn btn-primary" id="aiAnalysisBtn" onclick="runPortfolioAI()">🧠 AI Analysis</button>
+      </div>
+    </div>
+    <div class="kpi-row" id="portfolioKPIs">
+      <div class="kpi-card blue"><div class="kpi-label">Total Products</div><div class="kpi-val" id="kpiTotal">—</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Total Dev Investment</div><div class="kpi-val" id="kpiInvest">—</div></div>
+      <div class="kpi-card orange"><div class="kpi-label">Avg ROI %</div><div class="kpi-val" id="kpiROI">—</div></div>
+      <div class="kpi-card purple"><div class="kpi-label">Avg Payback (yrs)</div><div class="kpi-val" id="kpiPayback">—</div></div>
+    </div>
+    <div id="portfolioTableWrap">
+      <p style="color:var(--text2);text-align:center;padding:40px">Click Refresh to load portfolio data.</p>
+    </div>
+    <div id="aiAnalysisResult"></div>
+  </div>
+
+  <!-- ═══════ TAB: HUB MANAGER ═══════ -->
+  <div class="tab-panel" id="tab-hub">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <h2 style="font-size:1.3rem">🛠 Hub Manager</h2>
+      <button class="btn btn-ghost" onclick="loadHubs()">🔄 Refresh</button>
+    </div>
+    <div class="hub-grid" id="hubGrid">
+      <p style="color:var(--text2);text-align:center;padding:40px;grid-column:1/-1">Click Refresh to load hubs.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   GLOBALS
+   ═══════════════════════════════════════════ */
+const PASSPHRASE = 'ROISTUDIO2026';
+const GH_USER = 'xujeffersoninusa';
+const TEMPLATE_URL = 'https://raw.githubusercontent.com/xujeffersoninusa/roi-hub/main/index.html';
+const LS_KEY = 'roiStudioConfig';
+
+let currentStep = 0;
+let intakeData = {};
+let blueprintData = {};
+let portfolioCache = [];
+
+/* ── Config helpers ── */
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+}
+function saveConfig() {
+  const cfg = {
+    supaUrl: document.getElementById('cfgSupaUrl').value.replace(/\/$/,''),
+    supaKey: document.getElementById('cfgSupaKey').value,
+    ghToken: document.getElementById('cfgGhToken').value,
+    anthropicKey: document.getElementById('cfgAnthropicKey').value,
+    workerUrl: document.getElementById('cfgWorkerUrl').value.replace(/\/$/,'')
+  };
+  localStorage.setItem(LS_KEY, JSON.stringify(cfg));
+  closeModal('configModal');
+  toast('Configuration saved!','success');
+}
+function loadConfig() {
+  const c = getConfig();
+  if (c.supaUrl) document.getElementById('cfgSupaUrl').value = c.supaUrl;
+  if (c.supaKey) document.getElementById('cfgSupaKey').value = c.supaKey;
+  if (c.ghToken) document.getElementById('cfgGhToken').value = c.ghToken;
+  if (c.anthropicKey) document.getElementById('cfgAnthropicKey').value = c.anthropicKey;
+  if (c.workerUrl) document.getElementById('cfgWorkerUrl').value = c.workerUrl;
+}
+
+/* ── Security Gate ── */
+function checkGate() {
+  const val = document.getElementById('gateInput').value;
+  if (val === PASSPHRASE) {
+    document.getElementById('securityGate').classList.add('hidden');
+    document.getElementById('topbar').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'block';
+    setTimeout(() => document.getElementById('securityGate').style.display = 'none', 400);
+  } else {
+    document.getElementById('gateErr').textContent = '❌ Incorrect passphrase. Try again.';
+  }
+}
+document.getElementById('gateInput').addEventListener('keydown', e => { if (e.key === 'Enter') checkGate(); });
+
+/* ── Modal ── */
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+/* ── Toast ── */
+function toast(msg, type='info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast toast-' + type;
+  t.innerHTML = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 4000);
+}
+
+/* ── Tabs ── */
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('tab-' + id).classList.add('active');
+  if (id === 'portfolio') loadPortfolio();
+  if (id === 'hub') loadHubs();
+}
+
+/* ═══════════════════════════════════════════
+   PIPELINE NAVIGATION
+   ═══════════════════════════════════════════ */
+function goStep(n) {
+  currentStep = n;
+  // update pipeline bar
+  document.querySelectorAll('.pipe-step').forEach((s, i) => {
+    s.classList.remove('active','done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('active');
+  });
+  // show/hide panels
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('step-' + i).style.display = (i === n) ? 'block' : 'none';
+  }
+  // trigger actions
+  if (n === 1) generateBlueprint();
+  if (n === 3) runProvision();
+}
+
+/* ── Auto slug ── */
+document.getElementById('fProductName').addEventListener('input', e => {
+  const slug = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  document.getElementById('fHubName').value = slug ? 'roi-hub-' + slug : '';
+});
+
+/* ═══════════════════════════════════════════
+   STEP 0 → 1: INTAKE → BLUEPRINT
+   ═══════════════════════════════════════════ */
+function collectIntake() {
+  intakeData = {
+    product_name: document.getElementById('fProductName').value.trim(),
+    hub_name: document.getElementById('fHubName').value.trim(),
+    phase: document.getElementById('fPhase').value,
+    owner: document.getElementById('fOwner').value.trim(),
+    domain: document.getElementById('fDomain').value,
+    dev_cost: parseFloat(document.getElementById('fDevCost').value) || 0,
+    peak_units: parseInt(document.getElementById('fPeakUnits').value) || 0,
+    asp: parseFloat(document.getElementById('fASP').value) || 0,
+    cogs_pct: parseFloat(document.getElementById('fCOGS').value) || 0,
+    ramp_years: parseInt(document.getElementById('fRamp').value) || 3,
+    notes: document.getElementById('fNotes').value.trim()
+  };
+}
+
+function goToBlueprint() {
+  collectIntake();
+  if (!intakeData.product_name) { toast('Please enter a Product Name.','error'); return; }
+  if (!intakeData.dev_cost) { toast('Please enter Dev Cost.','error'); return; }
+  goStep(1);
+}
+
+/* ═══════════════════════════════════════════
+   STEP 1: AI BLUEPRINT
+   ═══════════════════════════════════════════ */
+async function generateBlueprint() {
+  const cfg = getConfig();
+  document.getElementById('blueprintLoading').style.display = 'flex';
+  document.getElementById('blueprintResult').style.display = 'none';
+  document.getElementById('bpNextBtn').disabled = true;
+
+  const prompt = `You are an expert financial analyst. Given this product data, generate a 5-year ROI projection.
+
+Product: ${intakeData.product_name}
+Domain: ${intakeData.domain}
+Phase: ${intakeData.phase}
+Development Cost: $${intakeData.dev_cost.toLocaleString()}
+Peak Annual Units: ${intakeData.peak_units}
+ASP: $${intakeData.asp.toLocaleString()}
+COGS: ${intakeData.cogs_pct}%
+Ramp Years: ${intakeData.ramp_years}
+
+Return a JSON object (no markdown fencing) with these exact keys:
+{
+  "revenue_5yr": <total 5-year revenue number>,
+  "gross_margin_5yr": <total 5-year gross margin number>,
+  "roi_pct": <ROI percentage number>,
+  "payback_years": <payback period in years number>,
+  "npv": <net present value at 10% discount rate number>,
+  "breakeven_units": <annual units needed to break even number>,
+  "year_by_year": [{"year":1,"units":...,"revenue":...,"gross_margin":...,"cumulative_cf":...}, ...for 5 years],
+  "analysis": "<2-3 paragraph analysis of the investment>"
+}`;
+
+  try {
+    const workerUrl = cfg.workerUrl || 'https://roi-ai-advisor.xujefferson.workers.dev';
+    const res = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2000,
+        apiKey: cfg.anthropicKey
+      })
+    });
+
+    if (!res.ok) throw new Error('AI request failed: ' + res.status);
+    const data = await res.json();
+    const text = data.content?.[0]?.text || data.text || JSON.stringify(data);
+
+    // Try to parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON found in AI response');
+    blueprintData = JSON.parse(jsonMatch[0]);
+
+    renderBlueprint();
+  } catch (err) {
+    console.error(err);
+    // Fallback: compute locally
+    toast('AI unavailable, computing locally...', 'info');
+    computeLocalBlueprint();
+    renderBlueprint();
+  }
+}
+
+function computeLocalBlueprint() {
+  const d = intakeData;
+  const ramp = d.ramp_years || 3;
+  const gm_pct = (100 - d.cogs_pct) / 100;
+  let yearByYear = [];
+  let cumCF = -d.dev_cost;
+  let totalRev = 0, totalGM = 0;
+  let payback = null;
+
+  for (let y = 1; y <= 5; y++) {
+    const rampFactor = Math.min(y / ramp, 1);
+    const units = Math.round(d.peak_units * rampFactor);
+    const rev = units * d.asp;
+    const gm = rev * gm_pct;
+    cumCF += gm;
+    totalRev += rev;
+    totalGM += gm;
+    if (payback === null && cumCF >= 0) payback = y;
+    yearByYear.push({ year: y, units, revenue: rev, gross_margin: gm, cumulative_cf: cumCF });
+  }
+
+  const roi = d.dev_cost > 0 ? ((totalGM - d.dev_cost) / d.dev_cost * 100) : 0;
+  const npvDiscount = 0.10;
+  let npv = -d.dev_cost;
+  for (let y = 0; y < 5; y++) npv += yearByYear[y].gross_margin / Math.pow(1 + npvDiscount, y + 1);
+  const beUnits = gm_pct > 0 && d.asp > 0 ? Math.ceil(d.dev_cost / (d.asp * gm_pct)) : 0;
+
+  blueprintData = {
+    revenue_5yr: totalRev,
+    gross_margin_5yr: totalGM,
+    roi_pct: Math.round(roi * 10) / 10,
+    payback_years: payback || '>5',
+    npv: Math.round(npv),
+    breakeven_units: beUnits,
+    year_by_year: yearByYear,
+    analysis: `Based on a development investment of $${d.dev_cost.toLocaleString()} and peak annual volume of ${d.peak_units} units at $${d.asp.toLocaleString()} ASP with ${d.cogs_pct}% COGS, this product projects total 5-year revenue of $${totalRev.toLocaleString()} and gross margin of $${totalGM.toLocaleString()}.\n\nThe estimated ROI is ${Math.round(roi)}% with a payback period of approximately ${payback || '>5'} years. Net Present Value at a 10% discount rate is $${Math.round(npv).toLocaleString()}.\n\nThe product requires approximately ${beUnits} cumulative units to break even on the development investment. The ${ramp}-year ramp assumption means the product reaches full volume by year ${ramp}.`
+  };
+}
+
+function renderBlueprint() {
+  const b = blueprintData;
+  document.getElementById('blueprintLoading').style.display = 'none';
+  document.getElementById('blueprintResult').style.display = 'block';
+  document.getElementById('bpNextBtn').disabled = false;
+
+  const fmt = n => typeof n === 'number' ? '$' + Math.round(n).toLocaleString() : n;
+  const kpis = [
+    { label: '5-Yr Revenue', val: fmt(b.revenue_5yr), color: 'var(--blue)' },
+    { label: '5-Yr Gross Margin', val: fmt(b.gross_margin_5yr), color: 'var(--green)' },
+    { label: 'ROI %', val: b.roi_pct + '%', color: 'var(--orange)' },
+    { label: 'Payback (yrs)', val: b.payback_years, color: 'var(--purple)' },
+    { label: 'NPV @10%', val: fmt(b.npv), color: 'var(--blue)' },
+    { label: 'Break-Even Units', val: typeof b.breakeven_units === 'number' ? b.breakeven_units.toLocaleString() : b.breakeven_units, color: 'var(--green)' }
+  ];
+
+  document.getElementById('bpKPIGrid').innerHTML = kpis.map(k =>
+    `<div class="bp-card"><div class="bp-lbl">${k.label}</div><div class="bp-val" style="color:${k.color}">${k.val}</div></div>`
+  ).join('');
+
+  let detail = '';
+  if (b.year_by_year && b.year_by_year.length) {
+    detail += '<strong>Year-by-Year Projections:</strong>\n';
+    b.year_by_year.forEach(y => {
+      detail += `  Year ${y.year}: ${y.units} units | Rev ${fmt(y.revenue)} | GM ${fmt(y.gross_margin)} | Cum CF ${fmt(y.cumulative_cf)}\n`;
+    });
+    detail += '\n';
+  }
+  detail += b.analysis || '';
+  document.getElementById('bpDetail').innerHTML = `<h3>🧠 AI Analysis</h3>${detail}`;
+}
+
+/* ═══════════════════════════════════════════
+   STEP 2: REVIEW
+   ═══════════════════════════════════════════ */
+function renderReview() {
+  const rows = [
+    ['Product', intakeData.product_name], ['Hub', intakeData.hub_name],
+    ['Phase', intakeData.phase], ['Owner', intakeData.owner], ['Domain', intakeData.domain],
+    ['Dev Cost', '$' + intakeData.dev_cost.toLocaleString()],
+    ['Peak Units', intakeData.peak_units.toLocaleString()],
+    ['ASP', '$' + intakeData.asp.toLocaleString()],
+    ['COGS', intakeData.cogs_pct + '%'], ['Ramp', intakeData.ramp_years + ' years'],
+    ['Notes', intakeData.notes || '—']
+  ];
+  document.getElementById('reviewIntake').innerHTML = rows.map(r =>
+    `<div class="review-row"><span class="rl">${r[0]}</span><span class="rv">${r[1]}</span></div>`
+  ).join('');
+
+  const b = blueprintData;
+  const fmt = n => typeof n === 'number' ? '$' + Math.round(n).toLocaleString() : n;
+  const bRows = [
+    ['5-Yr Revenue', fmt(b.revenue_5yr)], ['5-Yr Gross Margin', fmt(b.gross_margin_5yr)],
+    ['ROI %', b.roi_pct + '%'], ['Payback', b.payback_years + ' yrs'],
+    ['NPV @10%', fmt(b.npv)], ['Break-Even Units', typeof b.breakeven_units === 'number' ? b.breakeven_units.toLocaleString() : b.breakeven_units]
+  ];
+  document.getElementById('reviewBlueprint').innerHTML = bRows.map(r =>
+    `<div class="review-row"><span class="rl">${r[0]}</span><span class="rv">${r[1]}</span></div>`
+  ).join('');
+}
+
+// Intercept step 2 to render review
+const origGoStep = goStep;
+goStep = function(n) {
+  if (n === 2) renderReview();
+  origGoStep(n);
+};
+
+/* ═══════════════════════════════════════════
+   STEP 3: PROVISION
+   ═══════════════════════════════════════════ */
+function setProvStatus(idx, status, detail) {
+  const el = document.getElementById('prov-' + idx);
+  el.className = 'prov-step ' + status;
+  const icons = { pending: '⏳', running: '⏳', done: '✅', error: '❌' };
+  el.querySelector('.prov-icon').textContent = icons[status] || '⏳';
+  if (status === 'running') el.querySelector('.prov-icon').innerHTML = '<div class="spinner"></div>';
+  if (detail) el.querySelector('.prov-detail').textContent = detail;
+}
+
+async function runProvision() {
+  const cfg = getConfig();
+  document.getElementById('provNextBtn').disabled = true;
+
+  // Reset all steps
+  for (let i = 0; i < 4; i++) setProvStatus(i, 'pending', '');
+
+  const repoName = intakeData.hub_name || ('roi-hub-' + Date.now());
+  const pagesUrl = `https://${GH_USER}.github.io/${repoName}/`;
+  let supabaseId = null;
+
+  // ── Step 0: Supabase ──
+  try {
+    setProvStatus(0, 'running', 'Inserting into product_roi table...');
+    const record = {
+      product_name: intakeData.product_name,
+      hub_name: repoName,
+      phase: intakeData.phase,
+      owner: intakeData.owner,
+      domain: intakeData.domain,
+      dev_cost: intakeData.dev_cost,
+      peak_units: intakeData.peak_units,
+      asp: intakeData.asp,
+      cogs_pct: intakeData.cogs_pct,
+      ramp_years: intakeData.ramp_years,
+      notes: intakeData.notes,
+      roi_pct: blueprintData.roi_pct,
+      payback_years: typeof blueprintData.payback_years === 'number' ? blueprintData.payback_years : null,
+      npv: blueprintData.npv,
+      revenue_5yr: blueprintData.revenue_5yr,
+      gross_margin_5yr: blueprintData.gross_margin_5yr,
+      github_repo: `https://github.com/${GH_USER}/${repoName}`,
+      pages_url: pagesUrl,
+      status: 'active'
+    };
+
+    const sbRes = await fetch(`${cfg.supaUrl}/rest/v1/product_roi`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': cfg.supaKey,
+        'Authorization': 'Bearer ' + cfg.supaKey,
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(record)
+    });
+    if (!sbRes.ok) { const t = await sbRes.text(); throw new Error(t); }
+    const sbData = await sbRes.json();
+    supabaseId = sbData[0]?.id;
+    setProvStatus(0, 'done', 'Record saved! ID: ' + (supabaseId || 'OK'));
+  } catch (err) {
+    setProvStatus(0, 'error', 'Failed: ' + err.message);
+    toast('Supabase error: ' + err.message, 'error');
+    return;
+  }
+
+  // ── Step 1: Create GitHub Repo ──
+  try {
+    setProvStatus(1, 'running', `Creating repo: ${repoName}...`);
+    const ghRes = await fetch('https://api.github.com/user/repos', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + cfg.ghToken,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: repoName,
+        description: `ROI Hub for ${intakeData.product_name} - Generated by ROI Agent Studio`,
+        homepage: pagesUrl,
+        'private': false,
+        auto_init: true
+      })
+    });
+    if (!ghRes.ok) { const t = await ghRes.text(); throw new Error(t); }
+    setProvStatus(1, 'done', `Repo created: ${GH_USER}/${repoName}`);
+    // Small delay for repo initialization
+    await new Promise(r => setTimeout(r, 2000));
+  } catch (err) {
+    setProvStatus(1, 'error', 'Failed: ' + err.message.substring(0, 100));
+    toast('GitHub repo error: ' + err.message, 'error');
+    return;
+  }
+
+  // ── Step 2: Upload template ──
+  try {
+    setProvStatus(2, 'running', 'Fetching ROI Hub template...');
+    const tplRes = await fetch(TEMPLATE_URL);
+    if (!tplRes.ok) throw new Error('Template fetch failed: ' + tplRes.status);
+    let tplContent = await tplRes.text();
+
+    // Encode to base64
+    const b64 = btoa(unescape(encodeURIComponent(tplContent)));
+
+    setProvStatus(2, 'running', 'Uploading index.html...');
+    const uploadRes = await fetch(`https://api.github.com/repos/${GH_USER}/${repoName}/contents/index.html`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + cfg.ghToken,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'Add ROI Hub template via ROI Agent Studio',
+        content: b64
+      })
+    });
+    if (!uploadRes.ok) { const t = await uploadRes.text(); throw new Error(t); }
+    setProvStatus(2, 'done', 'Template uploaded successfully');
+  } catch (err) {
+    setProvStatus(2, 'error', 'Failed: ' + err.message.substring(0, 100));
+    toast('Template upload error: ' + err.message, 'error');
+    return;
+  }
+
+  // ── Step 3: Enable Pages ──
+  try {
+    setProvStatus(3, 'running', 'Enabling GitHub Pages...');
+    const pgRes = await fetch(`https://api.github.com/repos/${GH_USER}/${repoName}/pages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + cfg.ghToken,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        source: { branch: 'main', path: '/' }
+      })
+    });
+    if (!pgRes.ok) {
+      const t = await pgRes.text();
+      // 409 means pages may already be enabled
+      if (pgRes.status !== 409) throw new Error(t);
+    }
+    setProvStatus(3, 'done', `Pages enabled: ${pagesUrl}`);
+  } catch (err) {
+    setProvStatus(3, 'error', 'Failed: ' + err.message.substring(0, 100));
+    toast('Pages error: ' + err.message, 'error');
+    return;
+  }
+
+  // All done
+  document.getElementById('provNextBtn').disabled = false;
+  toast('🎉 Provisioning complete!', 'success');
+}
+
+/* ═══════════════════════════════════════════
+   STEP 4: VALIDATE
+   ═══════════════════════════════════════════ */
+const origGoStep2 = goStep;
+goStep = function(n) {
+  if (n === 4) renderValidate();
+  origGoStep2(n);
+};
+
+function renderValidate() {
+  const repoName = intakeData.hub_name;
+  const pagesUrl = `https://${GH_USER}.github.io/${repoName}/`;
+  const repoUrl = `https://github.com/${GH_USER}/${repoName}`;
+
+  document.getElementById('validateMsg').textContent =
+    `${intakeData.product_name} ROI Hub has been provisioned successfully.`;
+
+  document.getElementById('validateLinks').innerHTML = `
+    <a href="${pagesUrl}" target="_blank" class="btn btn-green">🌐 Open ROI Hub</a>
+    <a href="${repoUrl}" target="_blank" class="btn btn-ghost">📂 GitHub Repo</a>
+  `;
+}
+
+function resetStudio() {
+  currentStep = 0;
+  intakeData = {};
+  blueprintData = {};
+  // Reset form
+  document.getElementById('fProductName').value = '';
+  document.getElementById('fHubName').value = '';
+  document.getElementById('fPhase').selectedIndex = 2;
+  document.getElementById('fOwner').value = 'Jefferson Xu';
+  document.getElementById('fDomain').selectedIndex = 0;
+  document.getElementById('fDevCost').value = '';
+  document.getElementById('fPeakUnits').value = '';
+  document.getElementById('fASP').value = '';
+  document.getElementById('fCOGS').value = '40';
+  document.getElementById('fRamp').value = '3';
+  document.getElementById('fNotes').value = '';
+  // Reset provision steps
+  for (let i = 0; i < 4; i++) setProvStatus(i, 'pending', '');
+  document.getElementById('provNextBtn').disabled = true;
+  // Reset pipeline & show step 0
+  document.querySelectorAll('.pipe-step').forEach((s, i) => {
+    s.classList.remove('active','done');
+    if (i === 0) s.classList.add('active');
+  });
+  for (let i = 0; i < 5; i++) {
+    document.getElementById('step-' + i).style.display = (i === 0) ? 'block' : 'none';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PORTFOLIO
+   ═══════════════════════════════════════════ */
+async function loadPortfolio() {
+  const cfg = getConfig();
+  if (!cfg.supaKey) { toast('Please configure Supabase key in Settings.','error'); return; }
+
+  document.getElementById('portfolioTableWrap').innerHTML = '<div class="loading-center"><div class="spinner" style="width:30px;height:30px"></div></div>';
+
+  try {
+    const res = await fetch(`${cfg.supaUrl}/rest/v1/product_roi?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': cfg.supaKey,
+        'Authorization': 'Bearer ' + cfg.supaKey
+      }
+    });
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const data = await res.json();
+    portfolioCache = data;
+    renderPortfolioKPIs(data);
+    renderPortfolioTable(data);
+  } catch (err) {
+    document.getElementById('portfolioTableWrap').innerHTML = `<p style="color:var(--red);text-align:center;padding:40px">Error: ${err.message}</p>`;
+    toast('Portfolio load error: ' + err.message, 'error');
+  }
+}
+
+function renderPortfolioKPIs(data) {
+  const count = data.length;
+  const totalInvest = data.reduce((s, r) => s + (r.dev_cost || 0), 0);
+  const roiVals = data.filter(r => r.roi_pct != null).map(r => r.roi_pct);
+  const avgROI = roiVals.length ? (roiVals.reduce((a, b) => a + b, 0) / roiVals.length) : 0;
+  const pbVals = data.filter(r => r.payback_years != null).map(r => r.payback_years);
+  const avgPB = pbVals.length ? (pbVals.reduce((a, b) => a + b, 0) / pbVals.length) : 0;
+
+  document.getElementById('kpiTotal').textContent = count;
+  document.getElementById('kpiInvest').textContent = '$' + Math.round(totalInvest).toLocaleString();
+  document.getElementById('kpiROI').textContent = Math.round(avgROI) + '%';
+  document.getElementById('kpiPayback').textContent = avgPB ? avgPB.toFixed(1) : '—';
+}
+
+function renderPortfolioTable(data) {
+  if (!data.length) {
+    document.getElementById('portfolioTableWrap').innerHTML = '<p style="color:var(--text2);text-align:center;padding:40px">No products found. Create one in ROI Studio!</p>';
+    return;
+  }
+
+  const phaseBadge = p => {
+    const colors = { Concept:'blue', Feasibility:'purple', Development:'orange', Launch:'green', Mature:'green' };
+    return `<span class="badge badge-${colors[p] || 'blue'}">${p}</span>`;
+  };
+
+  let html = `<table class="data-table">
+    <thead><tr>
+      <th>Product</th><th>Phase</th><th>Domain</th><th>Dev Cost</th><th>Peak Units</th><th>ASP</th><th>ROI %</th><th>Payback</th><th>Status</th><th>Actions</th>
+    </tr></thead><tbody>`;
+
+  data.forEach(r => {
+    html += `<tr>
+      <td><strong>${r.product_name || '—'}</strong></td>
+      <td>${phaseBadge(r.phase)}</td>
+      <td>${r.domain || '—'}</td>
+      <td style="font-family:monospace">$${(r.dev_cost || 0).toLocaleString()}</td>
+      <td style="font-family:monospace">${(r.peak_units || 0).toLocaleString()}</td>
+      <td style="font-family:monospace">$${(r.asp || 0).toLocaleString()}</td>
+      <td style="font-family:monospace;color:${(r.roi_pct || 0) > 0 ? 'var(--green)' : 'var(--red)'}">${r.roi_pct || 0}%</td>
+      <td style="font-family:monospace">${r.payback_years != null ? r.payback_years + 'yr' : '—'}</td>
+      <td><span class="badge badge-green">${r.status || 'active'}</span></td>
+      <td>${r.pages_url ? `<a href="${r.pages_url}" target="_blank" class="btn btn-ghost" style="padding:4px 10px;font-size:.78rem">🔗 Open</a>` : '—'}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table>';
+  document.getElementById('portfolioTableWrap').innerHTML = html;
+}
+
+/* ── AI Portfolio Analysis ── */
+async function runPortfolioAI() {
+  if (!portfolioCache.length) { toast('Load portfolio data first.','error'); return; }
+  const cfg = getConfig();
+  if (!cfg.anthropicKey) { toast('Configure Anthropic API Key in Settings.','error'); return; }
+
+  document.getElementById('aiAnalysisBtn').disabled = true;
+  document.getElementById('aiAnalysisResult').innerHTML = '<div class="loading-center"><div class="spinner" style="width:30px;height:30px"></div></div>';
+
+  const summary = portfolioCache.map(r =>
+    `- ${r.product_name} | ${r.domain} | ${r.phase} | DevCost: $${(r.dev_cost||0).toLocaleString()} | ROI: ${r.roi_pct||0}% | Payback: ${r.payback_years||'N/A'}yr | NPV: $${(r.npv||0).toLocaleString()}`
+  ).join('\n');
+
+  const prompt = `You are a senior investment portfolio analyst. Analyze this product ROI portfolio and provide:
+1. Portfolio Health Assessment
+2. Top performers and underperformers
+3. Risk analysis
+4. Strategic recommendations
+5. Portfolio optimization suggestions
+
+Portfolio Data:
+${summary}
+
+Provide a concise, actionable analysis.`;
+
+  try {
+    const workerUrl = cfg.workerUrl || 'https://roi-ai-advisor.xujefferson.workers.dev';
+    const res = await fetch(workerUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2000,
+        apiKey: cfg.anthropicKey
+      })
+    });
+    if (!res.ok) throw new Error('AI request failed');
+    const data = await res.json();
+    const text = data.content?.[0]?.text || data.text || JSON.stringify(data);
+    document.getElementById('aiAnalysisResult').innerHTML = `<div class="ai-box"><h3>🧠 AI Portfolio Analysis</h3>${text}</div>`;
+  } catch (err) {
+    document.getElementById('aiAnalysisResult').innerHTML = `<div class="ai-box" style="border-color:var(--red)"><h3>❌ Error</h3>${err.message}</div>`;
+  }
+  document.getElementById('aiAnalysisBtn').disabled = false;
+}
+
+/* ═══════════════════════════════════════════
+   HUB MANAGER
+   ═══════════════════════════════════════════ */
+async function loadHubs() {
+  const cfg = getConfig();
+  if (!cfg.supaKey) { toast('Please configure Supabase key in Settings.','error'); return; }
+
+  document.getElementById('hubGrid').innerHTML = '<div class="loading-center" style="grid-column:1/-1"><div class="spinner" style="width:30px;height:30px"></div></div>';
+
+  try {
+    const res = await fetch(`${cfg.supaUrl}/rest/v1/product_roi?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': cfg.supaKey,
+        'Authorization': 'Bearer ' + cfg.supaKey
+      }
+    });
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+    const data = await res.json();
+    renderHubs(data);
+  } catch (err) {
+    document.getElementById('hubGrid').innerHTML = `<p style="color:var(--red);text-align:center;padding:40px;grid-column:1/-1">Error: ${err.message}</p>`;
+  }
+}
+
+function renderHubs(data) {
+  if (!data.length) {
+    document.getElementById('hubGrid').innerHTML = '<p style="color:var(--text2);text-align:center;padding:40px;grid-column:1/-1">No hubs found.</p>';
+    return;
+  }
+
+  const phaseBadge = p => {
+    const colors = { Concept:'blue', Feasibility:'purple', Development:'orange', Launch:'green', Mature:'green' };
+    return `<span class="badge badge-${colors[p] || 'blue'}">${p}</span>`;
+  };
+
+  document.getElementById('hubGrid').innerHTML = data.map(r => `
+    <div class="hub-card">
+      <h4>${r.product_name || r.hub_name}</h4>
+      <div class="hub-meta">
+        <span>${phaseBadge(r.phase)} &nbsp; ${r.domain || ''}</span>
+        <span>👤 ${r.owner || '—'}</span>
+        <span>📅 ${r.created_at ? new Date(r.created_at).toLocaleDateString() : '—'}</span>
+        <span>💰 Dev Cost: $${(r.dev_cost || 0).toLocaleString()} &nbsp;|&nbsp; ROI: ${r.roi_pct || 0}%</span>
+        <span>📊 Status: <span class="badge badge-green">${r.status || 'active'}</span></span>
+      </div>
+      <div class="hub-actions">
+        ${r.pages_url ? `<a href="${r.pages_url}" target="_blank" class="btn btn-green" style="font-size:.8rem;padding:6px 14px">🔗 Open Hub</a>` : ''}
+        ${r.github_repo ? `<a href="${r.github_repo}" target="_blank" class="btn btn-ghost" style="font-size:.8rem;padding:6px 14px">📂 Repo</a>` : ''}
+        <button class="btn btn-red" style="font-size:.8rem;padding:6px 14px" onclick="deleteHub('${r.id}','${r.hub_name}')">🗑 Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteHub(id, hubName) {
+  if (!confirm(`Delete "${hubName}"?\n\nThis will remove the record from Supabase.\nAlso delete the GitHub repo?`)) return;
+
+  const cfg = getConfig();
+  const deleteRepo = confirm('Also delete the GitHub repository?');
+
+  try {
+    // Delete from Supabase
+    const res = await fetch(`${cfg.supaUrl}/rest/v1/product_roi?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: {
+        'apikey': cfg.supaKey,
+        'Authorization': 'Bearer ' + cfg.supaKey
+      }
+    });
+    if (!res.ok) throw new Error('Supabase delete failed');
+    toast('Record deleted from Supabase.', 'success');
+
+    // Optionally delete GitHub repo
+    if (deleteRepo && cfg.ghToken) {
+      try {
+        const ghRes = await fetch(`https://api.github.com/repos/${GH_USER}/${hubName}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + cfg.ghToken,
+            'Accept': 'application/vnd.github+json'
+          }
+        });
+        if (ghRes.ok || ghRes.status === 204) {
+          toast('GitHub repo deleted.', 'success');
+        } else {
+          toast('GitHub repo delete failed (may need admin scope).', 'error');
+        }
+      } catch (e) {
+        toast('GitHub repo delete error: ' + e.message, 'error');
+      }
+    }
+
+    loadHubs();
+  } catch (err) {
+    toast('Delete error: ' + err.message, 'error');
+  }
+}
+
+/* ── Init ── */
+loadConfig();
+</script>
+</body>
+</html>
