@@ -919,7 +919,7 @@ window._allHubs=[];
 
 async function loadHubGrid(){
   var ag=document.getElementById('activeHubGrid');
-  if(ag) ag.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading\u2026</div>';
+  if(ag) ag.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
   var hubs=[];
   try{
     if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
@@ -1064,7 +1064,7 @@ async function confirmDeleteHub(){
   if(hub.db_table&&CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
     try{
       console.log('[HubMgr] Step 1: Deleting rows from',hub.db_table);
-      var r1=await fetch(CONFIG.supabaseUrl+'/rest/v1/'+hub.db_table+'?id=neq.',
+      var r1=await fetch(CONFIG.supabaseUrl+'/rest/v1/'+hub.db_table+'?id=not.is.null',
         {method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});
       console.log('[HubMgr] Step 1:',r1.status,(r1.ok||r1.status===204)?'\u2705 OK':'\u274C FAIL');
     }catch(e){console.error('[HubMgr] Step 1 error:',e);}
@@ -1078,7 +1078,7 @@ async function confirmDeleteHub(){
         {method:'DELETE',headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Accept':'application/vnd.github+json'}});
       if(r2.ok||r2.status===204)console.log('[HubMgr] Step 2 \u2705 Repo deleted');
       else if(r2.status===404)console.log('[HubMgr] Step 2 \u2705 Repo not found (already gone)');
-      else console.error('[HubMgr] Step 2 \u274C HTTP',r2.status);
+      else{var msg='[HubMgr] Step 2 \u274C HTTP '+r2.status;if(r2.status===401||r2.status===403)msg+=' \u2014 GitHub token may lack delete_repo scope. Update at github.com/settings/tokens';console.error(msg);toast('GitHub repo delete failed: HTTP '+r2.status+'. Check token scope.','error');}
     }catch(e){console.error('[HubMgr] Step 2 error:',e);}
   } else {console.warn('[HubMgr] Step 2 skipped (no GitHub token)');}
   /* Step 3: Delete registry entry */
