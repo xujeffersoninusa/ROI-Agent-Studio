@@ -1,59 +1,134 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<title>ROI Agent Studio v7→v8 Patcher</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ROI Agent Studio — Teradyne</title>
 <style>
-body{font-family:'Segoe UI',sans-serif;background:#0f1320;color:#e8edf8;margin:0;padding:40px;min-height:100vh;}
-h1{font-size:24px;}
-.box{background:#161c2e;border:1px solid #2a3350;border-radius:14px;padding:24px;margin:16px 0;max-width:800px;}
-label{display:block;margin-bottom:8px;font-weight:600;color:#60a5fa;}
-input[type=file]{margin:8px 0 16px;color:#e8edf8;}
-button{background:#60a5fa;color:#fff;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer;}
-button:hover{background:#3b82f6;}
-button:disabled{opacity:.5;cursor:not-allowed;}
-.log{background:#0a0d1c;border:1px solid #2a3350;border-radius:8px;padding:12px;font-family:monospace;font-size:12px;max-height:300px;overflow-y:auto;margin-top:16px;color:#34d399;white-space:pre-wrap;}
-.ok{color:#34d399;} .err{color:#f87171;} .warn{color:#fbbf24;}
+body.sec-pending *{display:none!important;}
+body.sec-pending .sec-block{display:flex!important;}
+body.sec-blocked *{display:none!important;}
+body.sec-blocked .sec-block{display:flex!important;}
+.sec-block{max-width:560px;margin:80px auto;padding:32px;border:1px solid #3a4060;border-radius:16px;background:#1a1f35;text-align:center;font-family:system-ui,sans-serif;flex-direction:column;align-items:center;}
+.sec-block h2{margin:0 0 12px;color:#f87171;font-size:22px;}
+.sec-block p{color:#7e8ba8;font-size:14px;margin:6px 0;}
 </style>
-</head>
-<body>
-<h1>🔧 ROI Agent Studio — v7 → v8 Patcher</h1>
-<div class="box">
-  <label>1. Select your <code>ROI_Agent_Studio_v7.html</code> file:</label>
-  <input type="file" id="fileIn" accept=".html,.htm"/>
-  <br/>
-  <button id="goBtn" onclick="runPatch()" disabled>2. Apply Hub Manager Patches & Download v8</button>
-  <div class="log" id="log"></div>
-</div>
-
 <script>
-var fileContent='';
-document.getElementById('fileIn').addEventListener('change',function(e){
-  var f=e.target.files[0];if(!f)return;
-  var reader=new FileReader();
-  reader.onload=function(ev){
-    fileContent=ev.target.result;
-    log('✅ Loaded: '+f.name+' ('+fileContent.length+' chars)','ok');
-    document.getElementById('goBtn').disabled=false;
-  };
-  reader.readAsText(f);
-});
-
-function log(msg,cls){
-  var el=document.getElementById('log');
-  el.innerHTML+='<span class="'+(cls||'')+'">'+ msg+'</span>\n';
-  el.scrollTop=el.scrollHeight;
+(function(){
+  var S={validToken:'jeffersonxuinteradyne',allowDirect:true};
+  function block(t,m){document.body.classList.remove('sec-pending');document.body.classList.add('sec-blocked');document.body.insertAdjacentHTML('afterbegin','<div class="sec-block"><span style="font-size:48px">&#x1F512;</span><h2>'+t+'</h2><p>'+m+'</p></div>');}
+  function allow(){document.body.classList.remove('sec-pending','sec-blocked');}
+  function check(){var raw=new URLSearchParams(location.search).get('access');var token=raw?raw.replace(/ /g,'+'):raw;if(S.allowDirect&&token===S.validToken){allow();return;}block('Access Denied','Use direct link with access token.');}
+  document.addEventListener('DOMContentLoaded',check);
+})();
+</script>
+<style>
+:root{
+  --bg:#0d1117;--surface:#161b22;--surface2:#1c2333;--card:#161b22;
+  --ink:#e8edf8;--muted:#7e8ba8;--line:#30363d;
+  --accent:#ff6b35;--accent-s:#2e1a0a;--accent2:#ff8c5a;
+  --green:#34d399;--green-s:#0a2e1e;
+  --amber:#fbbf24;--amber-s:#2e2008;
+  --red:#f87171;--red-s:#2e1010;
+  --violet:#a78bfa;
+  --blue:#60a5fa;--blue-s:#0d1f3d;
+  --shadow:0 4px 24px rgba(0,0,0,.5);--radius:12px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg);}
+#topbar{position:fixed;top:0;left:0;right:0;height:56px;background:rgba(13,17,23,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(14px);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 20px;gap:16px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand h1{margin:0;font-size:17px;font-weight:800;letter-spacing:-.02em;}
+.studio-badge{font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent-s),#1a0d0a);color:var(--accent);border:1px solid rgba(255,107,53,.3);border-radius:6px;padding:3px 10px;}
+.nav-tabs{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:4px;}
+.nav-tab{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap;}
+.nav-tab:hover{background:var(--surface);color:var(--ink);}
+.nav-tab.active{background:var(--surface);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.shell{padding:72px 28px 32px;max-width:1200px;margin:0 auto;}
+.step-pipeline{display:flex;align-items:center;gap:8px;padding:20px 0;margin-bottom:20px;overflow-x:auto;}
+.step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0;}
+.step-dot.pending{background:var(--surface2);color:var(--muted);border:2px solid var(--line);}
+.step-dot.active{background:var(--accent);color:#fff;border:2px solid var(--accent);box-shadow:0 0 12px rgba(255,107,53,.4);}
+.step-dot.done{background:var(--green-s);color:var(--green);border:2px solid rgba(52,211,153,.4);}
+.step-line{flex:1;height:2px;background:var(--line);min-width:20px;}
+.step-line.done{background:var(--green);}
+.step-label{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+.step-panel{display:none;animation:fadeIn .3s ease;}
+.step-panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.form-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
+.form-card h2{margin:0 0 16px;font-size:16px;font-weight:800;color:var(--ink);}
+.form-card h3{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--accent);}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field-grid .full{grid-column:1/-1;}
+.field-grid label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.field-grid input,.field-grid textarea,.field-grid select{width:100%;padding:8px 12px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;color:var(--ink);font-size:13px;font-family:inherit;}
+.field-grid input:focus,.field-grid textarea:focus,.field-grid select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,107,53,.15);}
+.field-grid textarea{min-height:80px;resize:vertical;}
+.btn-primary{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-weight:800;font-size:13px;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 0 16px rgba(255,107,53,.3);}
+.btn-secondary{background:transparent;border:1px solid var(--accent);color:var(--accent);border-radius:8px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{background:var(--accent);color:#fff;}
+.btn-ghost{background:var(--surface2);border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer;transition:all .2s;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:var(--red-s);border:1px solid rgba(248,113,113,.3);color:var(--red);border-radius:8px;padding:8px 16px;font-weight:700;font-size:12px;cursor:pointer;}
+.btn-danger:hover{background:rgba(248,113,113,.15);}
+.spec-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.spec-section{background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:12px;}
+.spec-section h3{margin:0 0 10px;font-size:13px;font-weight:800;color:var(--accent);}
+.spec-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(48,54,61,.5);}
+.spec-row .sr-label{color:var(--muted);}
+.spec-row .sr-value{color:var(--ink);font-weight:600;}
+.code-tabs{display:flex;gap:6px;align-items:center;margin-bottom:8px;}
+.code-tab{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--muted);background:var(--surface2);border:1px solid var(--line);}
+.code-tab.active{color:var(--accent);border-color:var(--accent);background:var(--accent-s);}
+.code-block{background:#0a0d14;border:1px solid var(--line);border-radius:10px;padding:16px;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink);max-height:500px;overflow:auto;white-space:pre;line-height:1.5;}
+.copy-btn{margin-left:auto;background:var(--surface2);border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent);}
+.auto-log{background:#0a0d14;border:1px solid var(--line);border-radius:10px;padding:14px 16px;font-family:ui-monospace,Consolas,monospace;font-size:12px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;}
+.log-line{line-height:1.5;color:var(--muted);}
+.log-line.log-success{color:var(--green);}
+.log-line.log-error{color:var(--red);}
+.log-line.log-warn{color:var(--amber);}
+.log-time{color:#3a4a6a;margin-right:8px;}
+.done-banner{display:none;align-items:center;gap:14px;padding:16px 20px;background:var(--green-s);border:1px solid rgba(52,211,153,.3);border-radius:10px;margin-top:14px;}
+.done-banner .db-icon{font-size:28px;}
+.done-banner .db-text{flex:1;}
+.done-banner .db-title{font-size:15px;font-weight:800;color:var(--green);margin-bottom:4px;}
+.done-banner .db-url{font-size:12px;color:var(--muted);}
+.done-banner a{color:var(--accent);text-decoration:none;}
+.auto-btn{background:linear-gradient(135deg,var(--green-s),var(--accent-s));color:var(--green);border:1px solid rgba(52,211,153,.4);font-weight:800;font-size:14px;padding:12px 24px;border-radius:10px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
+.auto-btn:hover{box-shadow:0 0 20px rgba(52,211,153,.2);}
+.val-item{display:flex;align-items:flex-start;gap:12px;padding:12px;background:var(--surface2);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.val-item:hover{border-color:var(--accent);}
+.val-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:all .2s;}
+.val-item.checked .val-check{border-color:var(--green);background:var(--green-s);color:var(--green);}
+.hub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-top:16px;}
+.hub-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;position:relative;transition:all .2s;}
+.hub-card:hover{border-color:var(--accent);box-shadow:0 0 16px rgba(255,107,53,.1);}
+.hub-card h3{margin:0 0 8px;font-size:15px;font-weight:800;}
+.hub-card .hc-meta{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.hub-card .hc-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.hub-status{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.hub-status.live{background:var(--green-s);color:var(--green);border:1px solid rgba(52,211,153,.3);}
+.hub-status.archived{background:var(--amber-s);color:var(--amber);border:1px solid rgba(251,191,36,.3);}
+.example-pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.example-pill{padding:6px 14px;background:var(--surface2);border:1px solid var(--line);border-radius:20px;font-size:12px;cursor:pointer;color:var(--muted);transition:all .15s;}
+.example-pill:hover{border-color:var(--accent);color:var(--accent);}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--line);border-radius:10px;padding:10px 20px;font-size:13px;z-index:600;transition:transform .3s;white-space:nowrap;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+#toast.success{border-color:rgba(52,211,153,.4);color:var(--green);}
+#toast.error{border-color:rgba(248,113,113,.4);color:var(--red);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:20px;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--surface);border:1px solid var(--line);border-radius:16px;width:min(580px,100%);padding:24px;}
+.modal-box h2{margin:0 0 16px;font-size:18px;font-weight:800;}
+@media(max-width:768px){
+  .field-grid{grid-template-columns:1fr;}
+  .spec-grid{grid-template-columns:1fr;}
+  .hub-grid{grid-template-columns:1fr;}
 }
 
-function runPatch(){
-  if(!fileContent){log('No file loaded!','err');return;}
-  var s=fileContent;
-  var patches=0;
-
-  // ═══════════════════════════════════════════════════════
-  // PATCH 1: Insert new CSS before the LAST </style> tag
-  // ═══════════════════════════════════════════════════════
-  var newCSS = `
 /* ── Hub Manager v8 — Active / Archived Layout ── */
 .hm-stats{color:var(--muted);font-size:12px;}
 .hm-section-label{display:flex;align-items:center;gap:8px;margin:24px 0 14px;font-size:16px;font-weight:800;}
@@ -82,53 +157,145 @@ function runPatch(){
 .del-modal-body strong{color:var(--ink);}
 .del-modal-body code{color:var(--green);font-size:11px;background:var(--surface2);padding:2px 6px;border-radius:4px;}
 .del-modal-actions{display:flex;justify-content:flex-end;gap:10px;}
-`;
-
-  // Find the FIRST </style> that's followed by </head> (the main stylesheet)
-  var styleEnd = s.indexOf('</style>');
-  if(styleEnd>0){
-    // Find all </style> occurrences; we want the one in the <head> (not inside the template)
-    // The first </style> in head is the main one
-    s = s.substring(0, styleEnd) + newCSS + s.substring(styleEnd);
-    patches++;
-    log('PATCH 1 ✅ New Hub Manager CSS inserted ('+newCSS.split('\n').length+' lines)','ok');
-  } else {
-    log('PATCH 1 ❌ Could not find </style> tag','err');
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // PATCH 2: Replace hubManagerShell HTML
-  // ═══════════════════════════════════════════════════════
-  var hmStart = s.indexOf('<div class="shell" id="hubManagerShell"');
-  if(hmStart<0) hmStart = s.indexOf("<div class='shell' id='hubManagerShell'");
-  if(hmStart<0) hmStart = s.indexOf('id="hubManagerShell"');
-  
-  if(hmStart>0){
-    // Find the shell div start, then find its closing tag
-    // The hubManagerShell is a sibling of studioShell, so find the next </div> at depth 0
-    var searchFrom = hmStart;
-    // Go back to the actual <div start if we matched on id=
-    if(s.substring(hmStart-30,hmStart).indexOf('<div')>=0){
-      hmStart = s.lastIndexOf('<div', hmStart);
-    }
-    
-    // Count nested divs to find the matching </div>
-    var depth=0; var i=hmStart; var found=false;
-    while(i<s.length){
-      if(s.substring(i,i+4)==='<div'){depth++;i+=4;}
-      else if(s.substring(i,i+6)==='</div>'){
-        depth--;
-        if(depth===0){
-          var hmEnd=i+6;
-          found=true;
-          break;
-        }
-        i+=6;
-      } else {i++;}
-    }
-    
-    if(found){
-      var newHubManagerHTML = `<!-- Delete Confirmation Modal -->
+</style>
+</head>
+<body class="sec-pending">
+<div id="toast"></div>
+<div id="topbar">
+  <div class="brand">
+    <svg width="100" height="26" viewBox="0 0 220 56" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0" width="56" height="56" rx="6" fill="#ff6b35"/>
+      <path d="M16 10L40 10L28 40Z" fill="#fff"/>
+      <circle cx="28" cy="28" r="5" fill="#ff6b35"/>
+      <text x="66" y="40" font-family="'Segoe UI',Arial,sans-serif" font-size="30" font-weight="700" fill="#e8edf8">TERADYNE</text>
+    </svg>
+    <div style="width:1px;height:22px;background:var(--line);margin:0 6px;"></div>
+    <h1>ROI Agent Studio</h1>
+    <span class="studio-badge">Hub Builder · Jefferson Only</span>
+  </div>
+  <div class="nav-tabs" id="studioNavTabs">
+    <span onclick="hideHubManager()" class="nav-tab active">&#x1F4CA; ROI Studio</span>
+    <span onclick="showHubManager()" class="nav-tab" id="hubNavTab">&#x1F5C2; Hubs(<span id="hubCount">&hellip;</span>)</span>
+    <a href="https://xujeffersoninusa.github.io/ROI-Hub-MKT-Portfolio/?access=jeffersonxuinteradyne" target="_blank" class="nav-tab" style="text-decoration:none;color:inherit;">&#x1F4CA; Portfolio &#x2197;</a>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span style="font-size:11px;color:var(--muted);">Logged in as Jefferson Xu</span>
+    <button class="btn-secondary" onclick="openSettings()" style="font-size:11px;padding:5px 10px;">⚙️ Credentials</button>
+  </div>
+</div>
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal-box">
+    <h2>⚙️ Credentials &amp; Configuration</h2>
+    <div class="field-grid">
+      <div><label>Supabase URL</label><input id="cfgSbUrl" placeholder="https://xxx.supabase.co"/></div>
+      <div><label>Supabase Anon Key</label><input id="cfgSbKey" type="password" autocomplete="off" placeholder="eyJ..."/></div>
+      <div><label>GitHub Token</label><input id="cfgGhToken" type="password" autocomplete="off" placeholder="ghp_..."/></div>
+      <div><label>GitHub Username</label><input id="cfgGhUser" value="xujeffersoninusa"/></div>
+      <div><label>Claude Proxy URL</label><input id="cfgProxyUrl" placeholder="https://xxx.workers.dev"/></div>
+      <div><label>Claude API Key</label><input id="cfgAiKey" type="password" autocomplete="off" placeholder="sk-ant-..."/></div>
+      <div><label>Supabase Mgmt Token</label><input id="cfgMgmtToken" type="password" autocomplete="off" placeholder="sbp_..."/></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn-primary" onclick="saveSettings()">&#x1F4BE; Save</button>
+      <button class="btn-ghost" onclick="closeSettings()">Cancel</button>
+      <button class="btn-ghost" onclick="testConnection()" style="margin-left:auto;">&#x1F50C; Test DB</button>
+    </div>
+  </div>
+</div>
+<div class="shell" id="studioShell">
+  <div class="step-pipeline">
+    <div><div class="step-dot active" id="sd1" onclick="goStep(1)">1</div><div class="step-label">Intake</div></div>
+    <div class="step-line" id="sl1"></div>
+    <div><div class="step-dot pending" id="sd2" onclick="goStep(2)">2</div><div class="step-label">Blueprint</div></div>
+    <div class="step-line" id="sl2"></div>
+    <div><div class="step-dot pending" id="sd3" onclick="goStep(3)">3</div><div class="step-label">Code Gen</div></div>
+    <div class="step-line" id="sl3"></div>
+    <div><div class="step-dot pending" id="sd4" onclick="goStep(4)">4</div><div class="step-label">Deploy</div></div>
+    <div class="step-line" id="sl4"></div>
+    <div><div class="step-dot pending" id="sd5" onclick="goStep(5)">5</div><div class="step-label">Validate</div></div>
+  </div>
+  <div class="step-panel active" id="step1">
+    <div class="form-card">
+      <h2>&#x1F4CB; ROI Hub Intake</h2>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Define the product for which you want to build a standalone ROI Hub.</p>
+      <div class="example-pills">
+        <span class="example-pill" onclick="fillExample('trishul')">&#x1F4E1; Trishul mmW24</span>
+        <span class="example-pill" onclick="fillExample('ultraflex')">&#x1F9EA; UltraFlex Plus</span>
+        <span class="example-pill" onclick="fillExample('j750')">&#x1F527; J750 Next Gen</span>
+      </div>
+      <div class="field-grid">
+        <div><label>Product Name *</label><input id="iName" placeholder="e.g. HLA Upgrade — mmW24"/></div>
+        <div><label>Business Unit</label><select id="iBU"><option value="Semiconductor Test">Semiconductor Test</option><option value="Industrial Automation">Industrial Automation</option><option value="Robotics">Robotics</option><option value="Wireless Test">Wireless Test</option><option value="System Test">System Test</option><option value="Other">Other</option></select></div>
+        <div><label>Product Code *</label><input id="iCode" placeholder="e.g. TRISHUL-MMW24-001"/></div>
+        <div><label>Phase</label><select id="iPhase"><option value="Ph1">Ph1 — Concept</option><option value="Ph2">Ph2 — Feasibility</option><option value="Ph3" selected>Ph3 — Development</option><option value="Ph4">Ph4 — Launch</option><option value="Post-Launch">Post-Launch</option></select></div>
+        <div><label>Owner</label><input id="iOwner" value="Jefferson Xu"/></div>
+        <div><label>Revenue Projection Years</label><input id="iYears" type="number" value="10" min="3" max="20"/></div>
+        <div><label>Currency</label><select id="iCurrency"><option value="$K" selected>$K (Thousands USD)</option><option value="$M">$M (Millions USD)</option></select></div>
+        <div><label>Hub Short Name</label><input id="iHub" placeholder="e.g. Trishul"/></div>
+      </div>
+      <h3 style="margin-top:20px;">Financial Defaults</h3>
+      <div class="field-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div><label>WACC %</label><input id="iWacc" type="number" value="12" step="0.5"/></div>
+        <div><label>Burden %</label><input id="iBurden" type="number" value="30" step="1"/></div>
+        <div><label>Cannibal DT %</label><input id="iCannibal" type="number" value="0" step="1"/></div>
+        <div><label>Default ASP ($K)</label><input id="iASP" type="number" value="500" step="10"/></div>
+        <div><label>Default COGS ($K)</label><input id="iCOGS" type="number" value="200" step="10"/></div>
+      </div>
+      <h3 style="margin-top:20px;">% of Sales Defaults</h3>
+      <div class="field-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div><label>Service %</label><input id="iPctSvc" type="number" value="2" step="0.5"/></div>
+        <div><label>Warranty %</label><input id="iPctWar" type="number" value="2" step="0.5"/></div>
+        <div><label>Inv Prov %</label><input id="iPctInv" type="number" value="1" step="0.5"/></div>
+        <div><label>Net Ops %</label><input id="iPctNet" type="number" value="1" step="0.5"/></div>
+        <div><label>Other COS %</label><input id="iPctOcos" type="number" value="0.5" step="0.5"/></div>
+        <div><label>Sales %</label><input id="iPctSales" type="number" value="3" step="0.5"/></div>
+        <div><label>Marketing %</label><input id="iPctMktg" type="number" value="3" step="0.5"/></div>
+        <div><label>G&amp;A %</label><input id="iPctGA" type="number" value="1" step="0.5"/></div>
+      </div>
+      <div class="field-grid" style="margin-top:16px;">
+        <div class="full"><label>Notes</label><textarea id="iNotes" placeholder="Optional notes..."></textarea></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:20px;">
+        <button class="btn-primary" onclick="generateBlueprint()">&#x1F680; Generate Blueprint</button>
+        <button class="btn-ghost" onclick="clearIntake()">Clear</button>
+      </div>
+    </div>
+  </div>
+  <div class="step-panel" id="step2">
+    <div class="form-card"><h2>&#x1F4D0; Blueprint Review</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Review the generated blueprint then approve.</p><div id="blueprintContent"></div><div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(1)">&#x2190; Back</button><button class="btn-primary" onclick="approveBlueprint()">&#x2705; Approve &amp; Generate Code</button></div></div>
+  </div>
+  <div class="step-panel" id="step3">
+    <div class="form-card"><h2>&#x2463; Provisioning Agent — Generated Artifacts</h2>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:24px;margin-top:16px;">
+        <!-- LEFT: Artifact Summary -->
+        <div style="background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius);padding:20px;">
+          <h3 style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;">Generated Artifacts</h3>
+          <div id="artifactSummary" style="font-size:13px;"></div>
+          <div style="margin-top:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px"><input type="checkbox" id="chkRP" checked style="width:16px;height:16px"/><label for="chkRP" style="font-size:12px;cursor:pointer">Register to Portfolio</label></div>
+            <button class="auto-btn" onclick="startAutoProvision()" style="width:100%;">&#x26A1; Auto-Deploy Everything</button>
+            <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center;">Runs SQL &#x2192; Creates GitHub repo &#x2192; Uploads HTML &#x2192; Enables Pages — fully automatic</p>
+          </div>
+          <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px;">
+            <p style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;">Or Download Manually</p>
+            <button class="btn-ghost" style="width:100%;margin-bottom:8px;" onclick="downloadFile('sql')">&#x2B07; Download SQL</button>
+            <button class="btn-ghost" style="width:100%;" onclick="downloadFile('html')">&#x2B07; Download HTML</button>
+          </div>
+        </div>
+        <!-- RIGHT: Code Preview -->
+        <div>
+          <div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div>
+          <div class="code-block" id="codeOutput" style="max-height:520px;overflow:auto;"></div>
+        </div>
+      </div>
+      <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">&#x26A1; Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next &#x2192;</button></div></div>
+      <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Validate &#x2192;</button></div>
+    </div>
+  </div>
+  <div class="step-panel" id="step4"><div class="form-card"><h2>&#x1F680; Deploy Checklist</h2><div id="deployContent"></div><div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(3)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(5)">Next: Validate →</button></div></div></div>
+  <div class="step-panel" id="step5"><div class="form-card"><h2>&#x2705; Validation Checklist</h2><div id="validationContent"></div><div style="margin-top:20px;"><button class="btn-primary" onclick="finishWizard()">&#x1F389; Finish &amp; Go Home</button></div></div></div>
+</div>
+<!-- Delete Confirmation Modal -->
 <div class="del-modal-overlay" id="delModal">
   <div class="del-modal">
     <h3>&#x26A0;&#xFE0F; Permanently Delete Hub</h3>
@@ -153,49 +320,628 @@ function runPatch(){
   <div class="hub-grid" id="activeHubGrid"></div>
   <div class="hm-section-label archived-lbl"><span class="hm-dot amber"></span> Archived Hubs</div>
   <div class="hub-grid" id="archivedHubGrid"></div>
-</div>`;
-      s = s.substring(0, hmStart) + newHubManagerHTML + s.substring(hmEnd);
-      patches++;
-      log('PATCH 2 ✅ Hub Manager HTML replaced with Active/Archived layout + delete modal','ok');
-    } else {
-      log('PATCH 2 ❌ Could not find closing </div> for hubManagerShell','err');
-    }
-  } else {
-    log('PATCH 2 ❌ Could not find hubManagerShell div','err');
-  }
+</div>
 
-  // ═══════════════════════════════════════════════════════
-  // PATCH 3: In loadHubGrid, replace renderHubCards → renderHubManager
-  // ═══════════════════════════════════════════════════════
-  var rcCount = 0;
-  while(s.indexOf('renderHubCards(')>=0){
-    s = s.replace('renderHubCards(', 'renderHubManager(');
-    rcCount++;
-  }
-  if(rcCount>0){
-    patches++;
-    log('PATCH 3 ✅ Replaced '+rcCount+' occurrence(s) of renderHubCards → renderHubManager','ok');
-  } else {
-    log('PATCH 3 ⚠️ renderHubCards not found (may already be patched)','warn');
-  }
+<!-- ROI Hub HTML Template -->
+<script type="text/html" id="roiHubTemplate">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{HUB_NAME}} — ROI Hub OS</title>
+<__SCRIPT__>
+(function(){
+  var S={validToken:'{{ACCESS_TOKEN}}',allowDirect:true};
+  function block(t,m){document.body.innerHTML='<div style="max-width:560px;margin:80px auto;padding:32px;border:1px solid #3a4060;border-radius:16px;background:#1a1f35;text-align:center;font-family:system-ui,sans-serif"><span style="font-size:48px">&#x1F512;</span><h2 style="color:#f87171;margin:12px 0">'+t+'</h2><p style="color:#7e8ba8;font-size:14px">'+m+'</p></div>';}
+  function check(){var raw=new URLSearchParams(location.search).get('access');var token=raw?raw.replace(/ /g,'+'):raw;if(S.allowDirect&&token===S.validToken)return;block('Access Denied','Use direct link with access token.');}
+  document.addEventListener('DOMContentLoaded',check);
+})();
+</__SCRIPT__>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f0f1a;--bg2:#1a1a2e;--card:#16213e;--inp:#0d1b2a;--bdr:#2a2a4a;--acc:#ff6b35;--acc2:#ff8c5a;--ink:#e8e8f0;--ink2:#a0a0c0;--muted:#6a6a8a;--green:#27ae60;--red:#e74c3c;--yellow:#f39c12;--blue:#3498db;--r:8px;--shd:0 4px 20px rgba(0,0,0,.4);--aiw:440px}
+html{font-size:14px}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden;transition:margin-right .35s}
+body.ai-open{margin-right:var(--aiw)}a{color:var(--acc)}
+.top-bar{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#1a1a2e,#16213e);padding:12px 30px;border-bottom:2px solid var(--acc);position:sticky;top:0;z-index:100}
+.top-bar .logo{display:flex;align-items:center;gap:12px}.top-bar .logo h1{font-size:1.25rem;font-weight:700;letter-spacing:1px}.top-bar .logo h1 span{color:var(--acc)}
+.top-bar .actions{display:flex;gap:10px;align-items:center}
+.btn{padding:8px 18px;border:none;border-radius:var(--r);cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
+.btn-primary{background:var(--acc);color:#fff}.btn-primary:hover{background:var(--acc2)}
+.btn-secondary{background:transparent;border:1px solid var(--acc);color:var(--acc)}.btn-secondary:hover{background:var(--acc);color:#fff}
+.btn-sm{padding:5px 12px;font-size:.8rem}
+.tab-bar{display:flex;background:var(--bg2);border-bottom:1px solid var(--bdr);padding:0 20px;overflow-x:auto}
+.tab-bar button{background:none;border:none;color:var(--ink2);padding:14px 22px;font-size:.9rem;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.tab-bar button:hover{color:var(--ink)}.tab-bar button.active{color:var(--acc);border-bottom-color:var(--acc);font-weight:600}
+.tab-content{display:none;padding:24px 30px;animation:fadeIn .3s}.tab-content.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.kpi-row{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:20px;overflow-x:auto}
+.kpi-card{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:10px 12px;box-shadow:var(--shd);position:relative;overflow:hidden;min-width:0}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc)}
+.kpi-card .kl{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.kpi-card .kv{font-size:1.15rem;font-weight:700}.kpi-card .ks{font-size:.75rem;color:var(--ink2);margin-top:4px}
+.kpi-card.green::before{background:var(--green)}.kpi-card.red::before{background:var(--red)}.kpi-card.yellow::before{background:var(--yellow)}.kpi-card.blue::before{background:var(--blue)}
+.badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.badge-go{background:rgba(39,174,96,.2);color:var(--green);border:1px solid var(--green)}
+.badge-caution{background:rgba(243,156,18,.2);color:var(--yellow);border:1px solid var(--yellow)}
+.badge-nogo{background:rgba(231,76,60,.2);color:var(--red);border:1px solid var(--red)}
+.panel{background:var(--card);border:1px solid var(--bdr);border-radius:var(--r);padding:20px;margin-bottom:20px;box-shadow:var(--shd)}
+.panel h2{font-size:1.05rem;margin-bottom:14px;color:var(--acc)}
+.tw{overflow-x:auto;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th,td{padding:8px 12px;text-align:right;border:1px solid var(--bdr);white-space:nowrap}
+th{background:#1b2838;color:var(--ink2);font-weight:600;text-transform:uppercase;font-size:.72rem;letter-spacing:.5px}
+td{background:var(--inp)}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;z-index:2;background:var(--card);font-weight:600;min-width:200px}
+tr:nth-child(even) td{background:rgba(26,26,46,.4)}
+tr.total-row td{background:rgba(255,107,53,.1);font-weight:700;border-top:2px solid var(--acc)}
+tr.subtotal-row td{background:rgba(52,152,219,.08);font-weight:600}
+tr.highlight-row td{background:rgba(39,174,96,.1);font-weight:700}
+input[type="number"],input[type="text"],input[type="password"],select{background:var(--inp);border:1px solid var(--bdr);color:var(--ink);padding:6px 10px;border-radius:4px;font-size:.82rem;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--acc)}
+td input{border:none;background:transparent;text-align:right;padding:2px 4px;width:100%}
+td input:focus{background:var(--inp);border:1px solid var(--acc);border-radius:3px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.fgi{display:flex;flex-direction:column;gap:4px}
+.fgi label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.sm{overflow-x:auto}.sm table th,.sm table td{text-align:center;min-width:80px;font-size:.78rem}
+.sp{background:rgba(39,174,96,.25)!important;color:var(--green)}.sn{background:rgba(231,76,60,.25)!important;color:var(--red)}.su{background:rgba(243,156,18,.15)!important;color:var(--yellow)}.sh{background:#1b2838!important;color:var(--acc)!important;font-weight:700!important}
+.ph{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:20px}
+.ph .pn{font-size:1.4rem;font-weight:700}.ph .pm{display:flex;gap:20px;flex-wrap:wrap}.ph .pm span{font-size:.82rem;color:var(--ink2)}.ph .pm b{color:var(--ink)}
+.ss{display:flex;gap:8px;margin-bottom:16px}
+.ss button{padding:8px 20px;border:1px solid var(--bdr);background:var(--inp);color:var(--ink2);border-radius:var(--r);cursor:pointer;font-size:.82rem;transition:all .2s}
+.ss button.active{border-color:var(--acc);color:var(--acc);background:rgba(255,107,53,.1)}
+.footer{text-align:center;padding:16px;color:var(--muted);font-size:.72rem;border-top:1px solid var(--bdr);margin-top:30px}
+.toast{position:fixed;bottom:20px;right:20px;padding:12px 24px;border-radius:var(--r);color:#fff;font-size:.85rem;font-weight:600;z-index:1000;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}.toast-success{background:var(--green)}.toast-error{background:var(--red)}.toast-info{background:var(--blue)}
+.ai-toggle{position:fixed;bottom:28px;right:28px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#e85d26);border:none;cursor:pointer;z-index:200;box-shadow:0 4px 24px rgba(255,107,53,.45);display:flex;align-items:center;justify-content:center;font-size:1.7rem;transition:all .3s;animation:pulse 2s infinite}
+.ai-toggle:hover{transform:scale(1.1)}body.ai-open .ai-toggle{right:calc(var(--aiw) + 28px)}
+@keyframes pulse{0%,100%{box-shadow:0 4px 24px rgba(255,107,53,.45)}50%{box-shadow:0 4px 32px rgba(255,107,53,.7)}}
+.ai-drawer{position:fixed;top:0;right:calc(-1*var(--aiw));width:var(--aiw);height:100vh;background:var(--bg2);border-left:2px solid var(--acc);z-index:150;display:flex;flex-direction:column;transition:right .35s;box-shadow:-8px 0 40px rgba(0,0,0,.5)}
+body.ai-open .ai-drawer{right:0}
+.ai-hd{padding:16px 20px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ai-hd .at{display:flex;align-items:center;gap:10px;font-size:1rem;font-weight:700}
+.ai-hd .ax{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;padding:4px 8px;border-radius:4px}.ai-hd .ax:hover{color:var(--ink)}
+.ai-st{padding:6px 20px;background:var(--inp);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:8px;font-size:.72rem;color:var(--muted);flex-shrink:0}
+.ai-st .dot{width:7px;height:7px;border-radius:50%;background:var(--red)}.ai-st .dot.ok{background:var(--green)}
+.ai-qa{padding:12px 16px;border-bottom:1px solid var(--bdr);display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0}
+.qb{padding:7px 10px;border:1px solid var(--bdr);background:var(--card);color:var(--ink2);border-radius:6px;cursor:pointer;font-size:.72rem;text-align:left;transition:all .2s;line-height:1.3}
+.qb:hover{border-color:var(--acc);color:var(--acc)}
+.ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:92%;padding:10px 14px;border-radius:12px;font-size:.82rem;line-height:1.6;word-wrap:break-word;white-space:pre-wrap}
+.msg-u{align-self:flex-end;background:var(--acc);color:#fff;border-bottom-right-radius:4px}
+.msg-a{align-self:flex-start;background:var(--card);border:1px solid var(--bdr);color:var(--ink);border-bottom-left-radius:4px}
+.msg-s{align-self:center;color:var(--muted);font-size:.72rem;text-align:center;padding:4px}
+.ai-typ{align-self:flex-start;display:flex;gap:5px;padding:12px 16px;background:var(--card);border:1px solid var(--bdr);border-radius:12px}
+.ai-typ .db{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:bounce .6s infinite alternate}.ai-typ .db:nth-child(2){animation-delay:.15s}.ai-typ .db:nth-child(3){animation-delay:.3s}
+@keyframes bounce{from{opacity:.3;transform:translateY(0)}to{opacity:1;transform:translateY(-5px)}}
+.ai-inp{padding:12px 16px;border-top:1px solid var(--bdr);background:var(--card);flex-shrink:0;display:flex;gap:8px;align-items:flex-end}
+.ai-inp textarea{flex:1;background:var(--inp);border:1px solid var(--bdr);color:var(--ink);padding:10px 14px;border-radius:var(--r);font-size:.82rem;font-family:inherit;resize:none;max-height:100px;min-height:40px}
+.ai-inp textarea:focus{outline:none;border-color:var(--acc)}
+.ai-inp button{width:40px;height:40px;border-radius:50%;background:var(--acc);border:none;color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ai-inp button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:768px){.ai-drawer{width:100%}.tab-content{padding:16px 14px}.kpi-row{grid-template-columns:1fr 1fr}}
 
-  // ═══════════════════════════════════════════════════════
-  // PATCH 4: Replace Hub Manager JS functions
-  // ═══════════════════════════════════════════════════════
-  // Find "function renderHubCards" or "function renderHubManager" (if patch 3 already renamed)
-  var fnStart = s.indexOf('function renderHubManager(hubs)');
-  if(fnStart<0) fnStart = s.indexOf('function renderHubCards(hubs)');
-  
-  // Find the end marker: "document.addEventListener('DOMContentLoaded'"
-  var fnEnd = s.indexOf("document.addEventListener('DOMContentLoaded'");
-  if(fnEnd<0) fnEnd = s.indexOf('document.addEventListener("DOMContentLoaded"');
-  
-  if(fnStart>0 && fnEnd>fnStart){
-    var newFunctions = `function renderHubManager(hubs){
+.snap-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 16px;background:var(--inp);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:16px}
+.snap-bar select{max-width:260px;min-width:160px}
+.snap-bar .snap-label{font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.rev-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+.rev-grid .panel{margin-bottom:0}
+.rev-grid .panel h2{font-size:.95rem}
+.rev-grid table{font-size:.78rem}
+.rev-grid th,.rev-grid td{padding:6px 8px}
+@media(max-width:1400px){.rev-grid{grid-template-columns:1fr}}
+.schema-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center}
+.schema-modal{background:var(--bg2);border:1px solid var(--acc);border-radius:var(--r);padding:24px;max-width:760px;width:90%;max-height:80vh;overflow-y:auto;position:relative}
+.schema-modal h2{color:var(--acc);margin-bottom:14px}
+.schema-modal pre{background:var(--inp);border:1px solid var(--bdr);border-radius:6px;padding:16px;font-size:.78rem;color:var(--ink);overflow-x:auto;white-space:pre;line-height:1.5}
+.schema-modal .close-btn{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.schema-modal .close-btn:hover{color:var(--ink)}
+
+.sub-panel{display:none}.sub-panel.active{display:block}
+.param-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--inp);border:1px solid var(--bdr);border-radius:20px;font-size:.78rem;color:var(--ink2)}
+.param-badge .pv{color:var(--acc);font-weight:700;font-size:.9rem}
+.tab-settings-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:10px 16px;background:var(--inp);border:1px solid var(--bdr);border-radius:var(--r);margin-bottom:16px}
+.tab-settings-row label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.tab-settings-row input[type="number"]{width:80px}
+.go-tag{display:inline-block;padding:6px 20px;border-radius:var(--r);font-size:1.1rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;vertical-align:middle;margin-left:12px}
+.go-tag.go-yes{background:rgba(39,174,96,.2);color:var(--green);border:2px solid var(--green)}
+.go-tag.go-caut{background:rgba(243,156,18,.2);color:var(--yellow);border:2px solid var(--yellow)}
+.go-tag.go-no{background:rgba(231,76,60,.2);color:var(--red);border:2px solid var(--red)}
+</style></head><body>
+<div class="top-bar"><div class="logo"><svg viewBox="0 0 32 32" width="32" height="32"><rect width="32" height="32" rx="6" fill="#ff6b35"/><path d="M8 22L16 10L24 22H8Z" fill="#fff"/><circle cx="16" cy="18" r="2" fill="#ff6b35"/></svg><h1 id="main-title">ROI <span>Hub</span> OS &#8212; {{PRODUCT_SHORT}}</h1></div><div class="actions"><button class="btn btn-secondary btn-sm" onclick="exportCSV()">&#x1F4E5; Export</button><button class="btn btn-secondary btn-sm" onclick="loadFromDB()">&#x1F4C2; Load</button><button class="btn btn-primary btn-sm" onclick="saveToDB()">&#x1F4BE; Save</button></div></div>
+<div class="tab-bar"><button class="active" onclick="switchTab('dashboard',this)">&#x1F4CA; Dashboard</button><button onclick="switchTab('devcosts',this)">&#x1F4B0; Dev Costs</button><button onclick="switchTab('revenue',this)">&#x1F4C8; Revenue</button><button onclick="switchTab('pnl',this)">&#x1F4CB; P&amp;L</button><button onclick="switchTab('sensitivity',this)">&#x1F3AF; Sensitivity</button><button onclick="switchTab('settings',this)">&#x2699; Settings</button></div>
+<div id="tab-dashboard" class="tab-content active">
+<div class="ph"><div><div class="pn"><span id="d-name">HLA Upgrade</span><span class="go-tag go-yes" id="d-go-tag">&#x25CF; GO</span></div></div><div class="pm"><span>Phase: <b id="d-phase">Ph3</b></span><span>Owner: <b id="d-owner">Jefferson Xu</b></span><span>Hub: <b id="d-hub">Trishul</b></span><span>Updated: <b id="d-upd">&#8212;</b></span></div></div>
+<div class="kpi-row"><div class="kpi-card blue"><div class="kl">Total Dev Investment</div><div class="kv" id="k-dev">$0</div></div><div class="kpi-card"><div class="kl">Revenue (Mid)</div><div class="kv" id="k-rev">$0</div></div><div class="kpi-card green" id="k-irr-c"><div class="kl">IRR</div><div class="kv" id="k-irr">0%</div><div class="ks">vs WACC <span id="k-wacc">15%</span></div></div><div class="kpi-card green" id="k-npv-c"><div class="kl">NPV</div><div class="kv" id="k-npv">$0</div></div><div class="kpi-card yellow"><div class="kl">BET</div><div class="kv" id="k-bet">&#8212;</div></div><div class="kpi-card yellow"><div class="kl">BEAR</div><div class="kv" id="k-bear">&#8212;</div></div><div class="kpi-card"><div class="kl">Std Margin %</div><div class="kv" id="k-mgn">0%</div></div><div class="kpi-card"><div class="kl">PBIT Lifetime</div><div class="kv" id="k-pbit">$0</div></div></div>
+<div class="panel" style="padding:12px 20px;margin-bottom:20px">
+<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+<h2 style="margin:0;font-size:.9rem;white-space:nowrap">⚙️ Financial Params</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+<span class="param-badge">WACC <span class="pv" id="d-wacc-val">15%</span></span>
+<span class="param-badge">Burden <span class="pv" id="d-burden-val">50%</span></span>
+<span class="param-badge">Cannibal DT <span class="pv" id="d-cannibal-val">20%</span></span>
+<span class="param-badge">IRR <span class="pv" id="d-irr-val">0%</span></span>
+</div>
+</div>
+</div>
+
+<div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px"><div class="panel"><h2>Summary P&amp;L</h2><div class="tw"><table id="d-pnl"></table></div></div><div class="panel"><h2>BET &amp; BEAR Analysis</h2><canvas id="chartCanvas" style="width:100%;height:280px;background:var(--inp);border-radius:var(--r)"></canvas><div style="margin-top:10px;display:flex;gap:16px;justify-content:center;font-size:.75rem;color:var(--ink2)"><span>style="color:#27ae60">&#x25A0; Sales</span><span style="color:#e74c3c">&#x25A0; Dev Expenses</span><span style="color:#3498db">&#x25A0; Operating Profit</span></div></div></div>
+<div class="panel"><h2>Scenario Comparison</h2><div class="tw"><table id="d-scen"></table></div></div></div>
+<div id="tab-devcosts" class="tab-content">
+<div class="tab-settings-row">
+<label>Burden %</label>
+<input type="number" id="cfg-burden" value="{{BURDEN}}" step="5" style="width:80px" oninput="recalcAll()"/>
+<span style="font-size:.72rem;color:var(--muted)">(auto-applied to Engineering + NPI Labor)</span>
+</div>
+<div class="snap-bar" id="snap-bar-dev">
+<span class="snap-label">📸 Snapshots</span>
+<select id="snap-sel-dev" style="flex:0 0 auto" onchange="autoLoadSnapshot('dev')"></select>
+<button class="btn btn-primary btn-sm" onclick="saveSnapshot('dev')">💾 Save</button>
+<button class="btn btn-secondary btn-sm" onclick="loadSnapshot('dev')">📂 Load</button>
+<button class="btn btn-secondary btn-sm" onclick="deleteSnapshot('dev')">🗑️ Delete</button>
+</div>
+<div class="panel"><h2>&#x1F4B0; Development Cost ($K)</h2><p style="color:var(--muted);font-size:.8rem;margin-bottom:14px">Enter annual R&amp;D investment. Burden auto-calculated.</p><div class="tw"><table id="tbl-dev"></table></div></div></div>
+<div id="tab-revenue" class="tab-content">
+<div class="tab-settings-row">
+<label>Default ASP ($K)</label>
+<input type="number" id="cfg-default-asp" value="{{DEFAULT_ASP}}" step="1" style="width:80px"/>
+<label>Default Unit COGS ($K)</label>
+<input type="number" id="cfg-default-cogs" value="{{DEFAULT_COGS}}" step="1" style="width:80px"/>
+<span style="font-size:.72rem;color:var(--muted)">(reference values)</span>
+</div>
+<div class="snap-bar" id="snap-bar-rev">
+<span class="snap-label">📸 Snapshots</span>
+<select id="snap-sel-rev" style="flex:0 0 auto" onchange="autoLoadSnapshot('rev')"></select>
+<button class="btn btn-primary btn-sm" onclick="saveSnapshot('rev')">💾 Save</button>
+<button class="btn btn-secondary btn-sm" onclick="deleteSnapshot('rev')">🗑️ Delete</button>
+</div>
+<div class="ss" id="rev-sub-tabs">
+<button class="active" onclick="switchRevScen('low',this)">📉 Low</button>
+<button onclick="switchRevScen('mid',this)">📊 Most Likely</button>
+<button onclick="switchRevScen('high',this)">📈 High</button>
+</div>
+<div id="rev-sub-low" class="sub-panel active">
+<div class="panel"><h2>📉 Low — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-low"></table></div></div>
+<div class="panel"><h2>📉 Low — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-low"></table></div></div>
+</div>
+<div id="rev-sub-mid" class="sub-panel">
+<div class="panel"><h2>📊 Most Likely — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-mid"></table></div></div>
+<div class="panel"><h2>📊 Most Likely — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-mid"></table></div></div>
+</div>
+<div id="rev-sub-high" class="sub-panel">
+<div class="panel"><h2>📈 High — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-high"></table></div></div>
+<div class="panel"><h2>📈 High — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-high"></table></div></div>
+</div>
+</div>
+<div id="tab-pnl" class="tab-content">
+<div class="tab-settings-row">
+<label>WACC %</label>
+<input type="number" id="cfg-wacc" value="{{WACC}}" step="0.5" style="width:80px" oninput="recalcAll()"/>
+<label>Cannibal DT %</label>
+<input type="number" id="cfg-cannibal-dt" value="{{CANNIBAL_DT}}" step="1" style="width:80px" oninput="recalcAll()"/>
+</div>
+<div class="panel" style="margin-bottom:16px"><h2>% of Sales</h2><div class="fg"><div class="fgi"><label>Service %</label><input type="number" id="cfg-pct-service" value="{{PCT_SVC}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Warranty %</label><input type="number" id="cfg-pct-warranty" value="{{PCT_WAR}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Inv Prov %</label><input type="number" id="cfg-pct-invprov" value="{{PCT_INV}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Net Ops %</label><input type="number" id="cfg-pct-netops" value="{{PCT_NET}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Other COS %</label><input type="number" id="cfg-pct-othercos" value="{{PCT_OCOS}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Sales %</label><input type="number" id="cfg-pct-sales" value="{{PCT_SALES}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Mktg %</label><input type="number" id="cfg-pct-mktg" value="{{PCT_MKTG}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>G&amp;A %</label><input type="number" id="cfg-pct-ga" value="{{PCT_GA}}" step="0.5" oninput="recalcAll()"/></div></div></div>
+<div class="ss" id="pnl-sub-tabs">
+<button class="active" onclick="switchPnlScen('low',this)">📉 Low</button>
+<button onclick="switchPnlScen('mid',this)">📊 Most Likely</button>
+<button onclick="switchPnlScen('high',this)">📈 High</button>
+</div>
+<div id="pnl-sub-low" class="sub-panel active">
+<div class="panel"><h2>📉 P&amp;L — Low ($K)</h2><div class="tw"><table id="tbl-pnl-low"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-low"></table></div></div>
+</div>
+<div id="pnl-sub-mid" class="sub-panel">
+<div class="panel"><h2>📊 P&amp;L — Most Likely ($K)</h2><div class="tw"><table id="tbl-pnl-mid"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-mid"></table></div></div>
+</div>
+<div id="pnl-sub-high" class="sub-panel">
+<div class="panel"><h2>📈 P&amp;L — High ($K)</h2><div class="tw"><table id="tbl-pnl-high"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-high"></table></div></div>
+</div>
+</div>
+<div id="tab-sensitivity" class="tab-content"><div class="panel"><h2>NPV Sensitivity ($K)</h2><div class="sm"><table id="tbl-snpv"></table></div></div><div class="panel"><h2>IRR Sensitivity</h2><div class="sm"><table id="tbl-sirr"></table></div></div></div>
+<div id="tab-settings" class="tab-content">
+<div class="panel"><h2>&#x1F5C4; Supabase</h2><div class="fg"><div class="fgi"><label>URL</label><input type="text" id="cfg-supa-url" value="{{SB_URL}}" placeholder="https://xxx.supabase.co"/></div><div class="fgi"><label>Anon Key</label><input type="password" id="cfg-supa-key"/></div><div class="fgi"><label>Table</label><input type="text" id="cfg-supa-table" value="{{DB_TABLE}}"/></div><div class="fgi"><label>Product ID</label><input type="text" id="cfg-product-id" value="{{PRODUCT_ID}}"/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testConnection()">&#x1F50C; Test DB</button><button class="btn btn-secondary btn-sm" onclick="showSchema()">&#x1F4CB; SQL Schema</button></div></div>
+<div class="panel"><h2>&#x1F916; Claude AI Advisor</h2><div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.2);border-radius:8px">&#x2705; Stored in <strong>localStorage only</strong></div><div class="fg"><div class="fgi"><label>Worker Proxy URL</label><input type="text" id="cfg-ai-url" value="{{PROXY_URL}}" placeholder="https://xxx.workers.dev"/></div><div class="fgi"><label>Claude API Key</label><input type="password" id="cfg-ai-key" placeholder="sk-ant-..."/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testAI()">&#x1F916; Test AI</button></div></div>
+<div class="panel"><h2>Project Metadata</h2><div class="fg"><div class="fgi"><label>Project Name</label><input type="text" id="cfg-proj-name" value="{{PRODUCT_NAME}}" oninput="recalcAll()"/></div><div class="fgi"><label>Hub</label><input type="text" id="cfg-hub" value="{{HUB_SHORT}}" oninput="recalcAll()"/></div><div class="fgi"><label>Phase</label><select id="cfg-phase" onchange="recalcAll()"><option>Ph0</option><option>Ph1</option><option>Ph2</option><option>Ph3</option><option>Ph4</option><option>Post-Launch</option></select></div><div class="fgi"><label>Owner</label><input type="text" id="cfg-owner" value="{{OWNER}}" oninput="recalcAll()"/></div></div></div>
+</div>
+<button class="ai-toggle" onclick="toggleAI()">&#x1F916;</button>
+<div class="ai-drawer"><div class="ai-hd"><div class="at"><span style="font-size:1.4rem">&#x1F916;</span> ROI AI Advisor <span style="font-size:.7rem;color:var(--acc);font-weight:400">Claude</span></div><button class="ax" onclick="toggleAI()">&#x2715;</button></div><div class="ai-st"><div class="dot" id="aiDot"></div><span id="aiLbl">Not connected</span></div><div class="ai-qa"><button class="qb" onclick="quickAction('analyze')">&#x1F4CA; Analyze ROI</button><button class="qb" onclick="quickAction('gonogo')">&#x1F3AF; Go/No-Go</button><button class="qb" onclick="quickAction('risk')">&#x1F4C9; Risk Assessment</button><button class="qb" onclick="quickAction('compare')">&#x1F504; Scenario Compare</button><button class="qb" onclick="quickAction('optimize')">&#x1F4A1; Optimization</button><button class="qb" onclick="quickAction('exec')">&#x1F4CB; Exec Summary</button></div><div class="ai-msgs" id="aiMsgs"><div class="msg-s">Configure Worker URL &amp; API key in Settings, then ask me anything!</div></div><div class="ai-inp"><textarea id="aiIn" rows="1" placeholder="Ask about this ROI..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea><button onclick="sendAIMessage()" id="aiSend">&#x27A4;</button></div></div>
+<div class="toast" id="toast"></div>
+<div class="footer">ROI Hub OS &#8212; {{PRODUCT_SHORT}} + AI v6.0 | Teradyne Marketing Group | 2026</div>
+<__SCRIPT__>
+"use strict";
+var PRODUCT_TAG="{{PRODUCT_SHORT}}";
+var N={{NUM_YEARS}},YL=(function(){var a=[];for(var i=1;i<=N;i++)a.push("Y"+i);return a;})();
+var DC=["Engineering Labor","NPI Labor","IDC/Low-Cost Labor","Contractors","Burden (auto)","Material/NRE","Capital Equipment","Applications","GSO"];
+var DD={"Engineering Labor":[0,0,0,0,0,0,0,0,0,0],"NPI Labor":[0,0,0,0,0,0,0,0,0,0],"IDC/Low-Cost Labor":[0,0,0,0,0,0,0,0,0,0],"Contractors":[0,0,0,0,0,0,0,0,0,0],"Burden (auto)":[0,0,0,0,0,0,0,0,0,0],"Material/NRE":[0,0,0,0,0,0,0,0,0,0],"Capital Equipment":[0,0,0,0,0,0,0,0,0,0],"Applications":[0,0,0,0,0,0,0,0,0,0],"GSO":[0,0,0,0,0,0,0,0,0,0]};
+var DR={low:{units:[0,0,0,0,0,0,0,0,0,0],asp:[0,0,0,0,0,0,0,0,0,0],cogs:[0,0,0,0,0,0,0,0,0,0]},mid:{units:[0,0,0,0,0,0,0,0,0,0],asp:[0,0,0,0,0,0,0,0,0,0],cogs:[0,0,0,0,0,0,0,0,0,0]},high:{units:[0,0,0,0,0,0,0,0,0,0],asp:[0,0,0,0,0,0,0,0,0,0],cogs:[0,0,0,0,0,0,0,0,0,0]}};
+var CAN={low:{revenue:[0,0,0,0,0,0,0,0,0,0]},mid:{revenue:[0,0,0,0,0,0,0,0,0,0]},high:{revenue:[0,0,0,0,0,0,0,0,0,0]}};
+var devC=JSON.parse(JSON.stringify(DD)),revD=JSON.parse(JSON.stringify(DR)),canD=JSON.parse(JSON.stringify(CAN));
+var activeRS="low",activePS="mid",aiHist=[],aiOn=false;
+var fmt=function(n){return n==null?"—":n.toLocaleString("en-US",{maximumFractionDigits:0})};
+var fK=function(n){return n==null?"—":"$"+fmt(n)+"K"};
+var fM=function(n){return n==null?"—":"$"+(n/1000).toFixed(1)+"M"};
+var fP=function(n){return n==null?"—":(n*100).toFixed(1)+"%"};
+var gv=function(id){return parseFloat(document.getElementById(id)?.value)||0};
+function showToast(m,t){var e=document.getElementById("toast");e.textContent=m;e.className="toast toast-"+(t||"info")+" show";setTimeout(function(){e.className="toast"},3200)}
+function switchTab(t,b){document.querySelectorAll(".tab-content").forEach(function(e){e.classList.remove("active")});document.querySelectorAll(".tab-bar button").forEach(function(e){e.classList.remove("active")});document.getElementById("tab-"+t).classList.add("active");if(b)b.classList.add("active")}
+function switchRevScen(sc,btn){document.querySelectorAll('#rev-sub-tabs button').forEach(function(b){b.classList.remove('active')});if(btn)btn.classList.add('active');['low','mid','high'].forEach(function(s){var el=document.getElementById('rev-sub-'+s);if(el){el.classList.remove('active');if(s===sc)el.classList.add('active')}})}
+function switchPnlScen(sc,btn){document.querySelectorAll('#pnl-sub-tabs button').forEach(function(b){b.classList.remove('active')});if(btn)btn.classList.add('active');['low','mid','high'].forEach(function(s){var el=document.getElementById('pnl-sub-'+s);if(el){el.classList.remove('active');if(s===sc)el.classList.add('active')}})}
+/* switchScen removed */
+
+/* switchPnlScen removed */
+
+function compBurden(){var r=gv("cfg-burden")/100;for(var i=0;i<N;i++)devC["Burden (auto)"][i]=Math.round((devC["Engineering Labor"][i]+devC["NPI Labor"][i])*r)}
+function getDevTot(){compBurden();var t=new Array(N).fill(0);DC.forEach(function(c){for(var i=0;i<N;i++)t[i]+=(devC[c]?.[i]||0)});return t}
+function compPnl(sc){var rv=revD[sc],dt=getDevTot();var p=function(k){return gv("cfg-pct-"+k)/100};var cDT=gv("cfg-cannibal-dt")/100;var R={};R.rev=rv.units.map(function(u,i){return u*rv.asp[i]});R.cogs=rv.units.map(function(u,i){return u*rv.cogs[i]});R.gm=R.rev.map(function(r,i){return r-R.cogs[i]});R.gmP=R.rev.map(function(r,i){return r?R.gm[i]/r:0});R.svc=R.rev.map(function(r){return r*p("service")});R.war=R.rev.map(function(r){return r*p("warranty")});R.invp=R.rev.map(function(r){return r*p("invprov")});R.nops=R.rev.map(function(r){return r*p("netops")});R.ocos=R.rev.map(function(r){return r*p("othercos")});R.tcos=R.rev.map(function(_,i){return R.svc[i]+R.war[i]+R.invp[i]+R.nops[i]+R.ocos[i]});R.can=canD[sc].revenue.map(function(c){return c*cDT});R.agm=R.gm.map(function(g,i){return g-R.tcos[i]-R.can[i]});R.sal=R.rev.map(function(r){return r*p("sales")});R.mkt=R.rev.map(function(r){return r*p("mktg")});R.ga=R.rev.map(function(r){return r*p("ga")});R.tsga=R.rev.map(function(_,i){return R.sal[i]+R.mkt[i]+R.ga[i]});R.dev=dt;R.pbit=R.agm.map(function(g,i){return g-R.tsga[i]-dt[i]});var cm=0;R.cpbit=R.pbit.map(function(pb){cm+=pb;return cm});return R}
+function calcIRR(cf,g){var r=g||0.1;for(var it=0;it<200;it++){var npv=0,dn=0;for(var i=0;i<cf.length;i++){var pv=cf[i]/Math.pow(1+r,i);npv+=pv;dn-=i*cf[i]/Math.pow(1+r,i+1)}if(Math.abs(dn)<1e-10)break;var nr=r-npv/dn;if(Math.abs(nr-r)<1e-8)return nr;r=nr;if(r<-0.99)r=-0.99;if(r>10)r=10}return r}
+function calcNPV(cf,r){return cf.reduce(function(s,v,i){return s+v/Math.pow(1+r,i)},0)}
+function getCF(sc){return compPnl(sc).pbit.slice()}
+function renderDev(){compBurden();var t=getDevTot();var h="<tr><th>Category</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr>";DC.forEach(function(c){var isB=c==="Burden (auto)";var v=devC[c]||new Array(N).fill(0);var s=v.reduce(function(a,b){return a+b},0);h+="<tr"+(isB?' style="color:var(--muted);font-style:italic"':"")+">"+"<td>"+c+"</td>";for(var i=0;i<N;i++){if(isB)h+="<td>"+fmt(v[i])+"</td>";else h+='<td><input type="number" value="'+v[i]+'" data-cat="'+c+'" data-yr="'+i+'" onchange="onDev(this)"/></td>'}h+='<td style="font-weight:700">'+fmt(s)+"</td></tr>"});h+='<tr class="total-row"><td>TOTAL DEV COST</td>';var gt=0;for(var i=0;i<N;i++){h+="<td>"+fmt(t[i])+"</td>";gt+=t[i]}h+="<td>"+fmt(gt)+"</td></tr>";document.getElementById("tbl-dev").innerHTML=h}
+function onDev(el){devC[el.dataset.cat][parseInt(el.dataset.yr)]=parseFloat(el.value)||0;compBurden();renderDev();
+refreshSnapSelects();
+document.getElementById("main-title").innerHTML="ROI <span>Hub</span> OS &#8212; "+PRODUCT_TAG;recalcAll()}
+function renderRev(){var scenarios=["low","mid","high"];scenarios.forEach(function(scKey){var sc=revD[scKey];var tblId="tbl-rev-"+scKey;var tbl=document.getElementById(tblId);if(!tbl)return;var h="<tr><th>Metric</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr>";[{k:"units",l:"Units"},{k:"asp",l:"ASP ($K)"},{k:"cogs",l:"Unit COGS ($K)"}].forEach(function(m){h+="<tr><td>"+m.l+"</td>";for(var i=0;i<N;i++)h+='<td><input type="number" value="'+sc[m.k][i]+'" data-scen="'+scKey+'" data-key="'+m.k+'" data-yr="'+i+'" onchange="onRev(this)"/></td>';h+="<td>"+fmt(sc[m.k].reduce(function(a,b){return a+b},0))+"</td></tr>"});var rv=sc.units.map(function(u,i){return u*sc.asp[i]});var cg=sc.units.map(function(u,i){return u*sc.cogs[i]});var mg=rv.map(function(r,i){return r-cg[i]});h+='<tr class="subtotal-row"><td>Revenue ($K)</td>';rv.forEach(function(r){h+="<td>"+fmt(r)+"</td>"});h+="<td>"+fmt(rv.reduce(function(a,b){return a+b},0))+"</td></tr>";h+='<tr class="highlight-row"><td>Std Margin ($K)</td>';mg.forEach(function(m){h+="<td>"+fmt(m)+"</td>"});h+="<td>"+fmt(mg.reduce(function(a,b){return a+b},0))+"</td></tr>";tbl.innerHTML=h});renderCan();recalcAll()}
+
+function onRev(el){var sc=el.dataset.scen||"mid";revD[sc][el.dataset.key][parseInt(el.dataset.yr)]=parseFloat(el.value)||0;renderRev()}
+
+function renderCan(){["low","mid","high"].forEach(function(scKey){var tbl=document.getElementById("tbl-can-"+scKey);if(!tbl)return;var cd=canD[scKey];var h="<tr><th>Category</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr><tr><td>Cannibalized Revenue</td>";for(var i=0;i<N;i++)h+='<td><input type="number" value="'+cd.revenue[i]+'" data-scen="'+scKey+'" data-yr="'+i+'" onchange="onCan(this)"/></td>';h+="<td>"+fmt(cd.revenue.reduce(function(a,b){return a+b},0))+"</td></tr>";tbl.innerHTML=h})}
+
+function onCan(el){var sc=el.dataset.scen||"mid";canD[sc].revenue[parseInt(el.dataset.yr)]=parseFloat(el.value)||0;renderCan();recalcAll()}
+
+function renderPnl(){["low","mid","high"].forEach(function(sc){var P=compPnl(sc);var tbl=document.getElementById("tbl-pnl-"+sc);var mtbl=document.getElementById("tbl-met-"+sc);if(!tbl)return;var rows=[{l:"Revenue",d:P.rev,c:"subtotal-row"},{l:"Std COGS",d:P.cogs},{l:"Gross Margin",d:P.gm,c:"highlight-row"},{l:"Margin %",d:P.gmP,f:1},{l:"Service",d:P.svc},{l:"Warranty",d:P.war},{l:"Inv Prov",d:P.invp},{l:"Net Ops",d:P.nops},{l:"Other COS",d:P.ocos},{l:"Total Other COS",d:P.tcos,c:"subtotal-row"},{l:"Cannibalization",d:P.can},{l:"Adj Gross Margin",d:P.agm,c:"highlight-row"},{l:"Sales",d:P.sal},{l:"Marketing",d:P.mkt},{l:"G&A",d:P.ga},{l:"Total SG&A",d:P.tsga,c:"subtotal-row"},{l:"R&D / Dev Cost",d:P.dev},{l:"PBIT",d:P.pbit,c:"highlight-row"},{l:"Cum PBIT",d:P.cpbit,c:"total-row"}];var h="<tr><th>Line Item</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr>";rows.forEach(function(r){h+="<tr"+(r.c?' class="'+r.c+'"':"")+"><td>"+r.l+"</td>";var t=0;for(var i=0;i<N;i++){var v=r.d[i];if(r.f)h+="<td>"+fP(v)+"</td>";else{h+="<td>"+fmt(Math.round(v))+"</td>";t+=v}}h+="<td>"+(r.f?"":fmt(Math.round(t)))+"</td></tr>"});tbl.innerHTML=h;var cf=getCF(sc);var wacc=gv("cfg-wacc")/100;var irr=calcIRR(cf);var npv=calcNPV(cf,wacc);if(mtbl)mtbl.innerHTML="<tr><th>Metric</th><th>Value</th></tr><tr><td>IRR</td><td>"+fP(irr)+"</td></tr><tr><td>NPV @ "+gv("cfg-wacc")+"%</td><td>"+fK(Math.round(npv))+"</td></tr>"})}
+
+function renderSens(){var ms=[0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4];var wacc=gv("cfg-wacc")/100;var bcf=getCF("mid");var bdt=getDevTot();var br=revD.mid;var h='<tr><th class="sh">NPV / Rev%\u2192</th>';ms.forEach(function(m){h+='<th class="sh">'+Math.round(m*100)+"%</th>"});h+="</tr>";ms.forEach(function(dm){h+='<tr><td class="sh">Dev '+Math.round(dm*100)+"%</td>";ms.forEach(function(rm){var cf=bcf.map(function(v,i){var od=bdt[i];var or2=br.units[i]*br.asp[i];return v+(or2*rm-or2)*0.85-(od*dm-od)});var npv=calcNPV(cf,wacc);var c=npv>500?"sp":npv<-500?"sn":"su";h+='<td class="'+c+'">'+fmt(Math.round(npv))+"</td>"});h+="</tr>"});document.getElementById("tbl-snpv").innerHTML=h;var h2='<tr><th class="sh">IRR / Rev%\u2192</th>';ms.forEach(function(m){h2+='<th class="sh">'+Math.round(m*100)+"%</th>"});h2+="</tr>";ms.forEach(function(dm){h2+='<tr><td class="sh">Dev '+Math.round(dm*100)+"%</td>";ms.forEach(function(rm){var cf=bcf.map(function(v,i){var od=bdt[i];var or2=br.units[i]*br.asp[i];return v+(or2*rm-or2)*0.85-(od*dm-od)});var irr=calcIRR(cf);var c=irr>wacc+.05?"sp":irr<wacc-.05?"sn":"su";h2+='<td class="'+c+'">'+fP(irr)+"</td>"});h2+="</tr>"});document.getElementById("tbl-sirr").innerHTML=h2}
+function renderDash(){try{var P=compPnl("mid");var cf=getCF("mid");var wacc=gv("cfg-wacc")/100;var irr=calcIRR(cf);var npv=calcNPV(cf,wacc);var tdev=getDevTot().reduce(function(a,b){return a+b},0);var trev=P.rev.reduce(function(a,b){return a+b},0);var tpbit=P.pbit.reduce(function(a,b){return a+b},0);var avgM=trev?P.gm.reduce(function(a,b){return a+b},0)/trev:0;var bet="N/A",bear="N/A",betIdx=-1,revStartIdx=-1,cm=0;for(var i=0;i<N;i++){cm+=cf[i];if(cm>0&&betIdx<0){betIdx=i;bet="Y"+(i+1)}}for(var i=0;i<N;i++){if(P.rev[i]>0&&revStartIdx<0)revStartIdx=i}if(betIdx>=0&&revStartIdx>=0){bear=(betIdx-revStartIdx)+" yrs"}var isGo=irr>wacc&&npv>0;var isCaut=(irr>wacc)!==(npv>0);var gt=document.getElementById("d-go-tag");if(gt){gt.className="go-tag "+(isGo?"go-yes":isCaut?"go-caut":"go-no");gt.innerHTML=isGo?"\u25CF GO":isCaut?"\u25CF CAUTION":"\u25CF NO-GO"}var S=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v};S("k-dev",fM(tdev));S("k-rev",fM(trev));S("k-irr",isFinite(irr)?fP(irr):"N/A");S("k-npv",fK(Math.round(npv)));S("k-bet",bet);S("k-bear",bear);S("k-mgn",fP(avgM));S("k-pbit",fM(tpbit));S("k-wacc",gv("cfg-wacc")+"%");var irrC=document.getElementById("k-irr-c");if(irrC)irrC.className="kpi-card "+(irr>wacc?"green":"red");var npvC=document.getElementById("k-npv-c");if(npvC)npvC.className="kpi-card "+(npv>0?"green":"red");S("d-name",document.getElementById("cfg-proj-name")?.value||"Project");S("d-phase",document.getElementById("cfg-phase")?.value||"Ph3");S("d-owner",document.getElementById("cfg-owner")?.value||"\u2014");S("d-hub",document.getElementById("cfg-hub")?.value||"\u2014");S("d-upd",new Date().toLocaleDateString());var dwv=document.getElementById("d-wacc-val");if(dwv)dwv.textContent=gv("cfg-wacc")+"%";var dbv=document.getElementById("d-burden-val");if(dbv)dbv.textContent=gv("cfg-burden")+"%";var dcv=document.getElementById("d-cannibal-val");if(dcv)dcv.textContent=gv("cfg-cannibal-dt")+"%";var div2=document.getElementById("d-irr-val");if(div2)div2.textContent=isFinite(irr)?fP(irr):"N/A";var sh="<tr><th>Item</th>";YL.forEach(function(y){sh+="<th>"+y+"</th>"});sh+="<th>TOTAL</th></tr>";[{l:"Revenue",d:P.rev},{l:"Gross Margin",d:P.gm},{l:"Dev Cost",d:P.dev},{l:"PBIT",d:P.pbit},{l:"Cum PBIT",d:P.cpbit}].forEach(function(r){sh+="<tr><td>"+r.l+"</td>";var t=0;r.d.forEach(function(v){sh+="<td>"+fmt(Math.round(v))+"</td>";t+=v});sh+="<td>"+fmt(Math.round(t))+"</td></tr>"});var dpnl=document.getElementById("d-pnl");if(dpnl)dpnl.innerHTML=sh;var sc2="<tr><th>Metric</th><th>Low</th><th>Mid</th><th>High</th></tr>";var sd={};["low","mid","high"].forEach(function(s){var p=compPnl(s);var c=getCF(s);sd[s]={rev:p.rev.reduce(function(a,b){return a+b},0),gm:p.gm.reduce(function(a,b){return a+b},0),pbit:p.pbit.reduce(function(a,b){return a+b},0),irr:calcIRR(c),npv:calcNPV(c,wacc)}});[{l:"Revenue",k:"rev",f:fmt},{l:"Gross Margin",k:"gm",f:fmt},{l:"PBIT",k:"pbit",f:fmt},{l:"IRR",k:"irr",f:fP},{l:"NPV",k:"npv",f:function(v){return fmt(Math.round(v))}}].forEach(function(r){sc2+="<tr><td>"+r.l+"</td>";["low","mid","high"].forEach(function(s){sc2+="<td>"+r.f(sd[s][r.k])+"</td>"});sc2+="</tr>"});var dscen=document.getElementById("d-scen");if(dscen)dscen.innerHTML=sc2;drawChart(P)}catch(e){console.error("renderDash error:",e)}}
+function drawChart(P){var c=document.getElementById("chartCanvas");if(!c)return;var ctx=c.getContext("2d");var dpr=window.devicePixelRatio||1;c.width=c.offsetWidth*dpr;c.height=c.offsetHeight*dpr;ctx.scale(dpr,dpr);var w=c.offsetWidth,h2=c.offsetHeight;ctx.clearRect(0,0,w,h2);var pad={t:30,r:20,b:40,l:65};var pw=w-pad.l-pad.r,ph=h2-pad.t-pad.b;var dt=getDevTot();var rv=P.rev;var cumDev=[],cumPbit=[];var cd2=0,cp2=0;for(var i=0;i<N;i++){cd2+=dt[i];cumDev.push(cd2);cp2+=P.pbit[i];cumPbit.push(cp2)}var all=[].concat(rv,cumDev,cumPbit);var mx=Math.max.apply(null,all.concat([1]))*1.15;var mn=Math.min.apply(null,all.concat([0]));if(mn>0)mn=0;var rng=mx-mn||1;var xp=function(i){return pad.l+(i+0.5)/N*pw};var yp=function(v){return pad.t+ph-(v-mn)/rng*ph};var bw=pw/N*0.22;ctx.strokeStyle="rgba(42,42,74,.3)";ctx.lineWidth=1;for(var g=0;g<=5;g++){var gy=pad.t+ph/5*g;ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(w-pad.r,gy);ctx.stroke();ctx.fillStyle="#6a6a8a";ctx.font="10px sans-serif";ctx.textAlign="right";ctx.fillText(fmt(Math.round(mx-(mx-mn)/5*g)),pad.l-8,gy+4)}ctx.fillStyle="#6a6a8a";ctx.font="11px sans-serif";ctx.textAlign="center";ctx.save();ctx.translate(12,pad.t+ph/2);ctx.rotate(-Math.PI/2);ctx.fillText("$K",0,0);ctx.restore();YL.forEach(function(l,i){ctx.fillStyle="#6a6a8a";ctx.font="10px sans-serif";ctx.textAlign="center";ctx.fillText(l,xp(i),h2-pad.b+16)});for(var i=0;i<N;i++){if(rv[i]>0){ctx.fillStyle="rgba(39,174,96,0.7)";ctx.fillRect(xp(i)-bw*1.5,yp(rv[i]),bw,yp(0)-yp(rv[i]))}if(cumDev[i]>0){ctx.fillStyle="rgba(231,76,60,0.7)";ctx.fillRect(xp(i)-bw*0.5,yp(cumDev[i]),bw,yp(0)-yp(cumDev[i]))}var cpv=cumPbit[i];ctx.fillStyle=cpv>=0?"rgba(52,152,219,0.7)":"rgba(52,152,219,0.4)";if(cpv>=0){ctx.fillRect(xp(i)+bw*0.5,yp(cpv),bw,yp(0)-yp(cpv))}else{ctx.fillRect(xp(i)+bw*0.5,yp(0),bw,yp(cpv)-yp(0))}}var betYr=-1,revStart=-1;cp2=0;for(var i=0;i<N;i++){cp2+=P.pbit[i];if(cp2>0&&betYr<0)betYr=i;if(rv[i]>0&&revStart<0)revStart=i}if(betYr>=0){var bx=xp(betYr)+bw;ctx.setLineDash([6,4]);ctx.strokeStyle="#ff6b35";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,pad.t);ctx.lineTo(bx,pad.t+ph);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle="#e8e8f0";ctx.font="bold 11px sans-serif";ctx.textAlign="center";ctx.fillText("BET = Y"+(betYr+1),(pad.l+bx)/2,pad.t+12);if(revStart>=0){ctx.fillStyle="#a0a0c0";ctx.fillText("BEAR = "+(betYr-revStart)+" yrs",(pad.l+bx)/2,pad.t+ph-8)}}}
+function recalcAll(){renderDev();renderPnl();renderSens();renderDash()}
+async function testConnection(){var u=document.getElementById("cfg-supa-url").value.trim();var k=document.getElementById("cfg-supa-key").value.trim();if(!u||!k){showToast("Enter URL and Key","error");return}try{var r=await fetch(u+"/rest/v1/roi_hub_registry?select=count",{headers:{"apikey":k,"Authorization":"Bearer "+k}});if(r.ok)showToast("Supabase connected!","success");else throw new Error("HTTP "+r.status)}catch(e){showToast("Failed: "+e.message,"error")}}
+async function saveToDB(){var u=document.getElementById("cfg-supa-url").value.trim();var k=document.getElementById("cfg-supa-key").value.trim();var tbl=document.getElementById("cfg-supa-table").value.trim()||"product_roi";var pid=document.getElementById("cfg-product-id").value.trim();if(!u||!k){showToast("Configure Supabase","error");return}var wacc=gv("cfg-wacc")/100;var computeScen=function(sc){var P=compPnl(sc);var cf=getCF(sc);var irr=calcIRR(cf);var npv=calcNPV(cf,wacc);return{irr:irr,npv:Math.round(npv),pbit_total:Math.round(P.pbit.reduce(function(a,b){return a+b},0)),rev_total:Math.round(P.rev.reduce(function(a,b){return a+b},0)),go_nogo:irr>wacc&&npv>0?"go":irr>wacc||npv>0?"caution":"nogo"}};var settings={wacc:gv("cfg-wacc"),cannibal_dt:gv("cfg-cannibal-dt"),burden:gv("cfg-burden"),pct_service:gv("cfg-pct-service"),pct_warranty:gv("cfg-pct-warranty"),pct_invprov:gv("cfg-pct-invprov"),pct_netops:gv("cfg-pct-netops"),pct_othercos:gv("cfg-pct-othercos"),pct_sales:gv("cfg-pct-sales"),pct_mktg:gv("cfg-pct-mktg"),pct_ga:gv("cfg-pct-ga")};var payload={product_id:pid,product_tag:PRODUCT_TAG,project_name:document.getElementById("cfg-proj-name").value,hub_name:document.getElementById("cfg-hub").value,phase:document.getElementById("cfg-phase").value,owner:document.getElementById("cfg-owner").value,settings:settings,dev_costs:devC,revenue_scenarios:revD,cannibal_scenarios:canD,computed_metrics:{low:computeScen("low"),mid:computeScen("mid"),high:computeScen("high")},updated_at:new Date().toISOString()};try{var chk=await fetch(u+"/rest/v1/"+tbl+"?product_id=eq."+pid+"&select=product_id",{headers:{"apikey":k,"Authorization":"Bearer "+k}});var ex=await chk.json();var r;if(ex.length>0)r=await fetch(u+"/rest/v1/"+tbl+"?product_id=eq."+pid,{method:"PATCH",headers:{"apikey":k,"Authorization":"Bearer "+k,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(payload)});else{payload.created_at=new Date().toISOString();r=await fetch(u+"/rest/v1/"+tbl,{method:"POST",headers:{"apikey":k,"Authorization":"Bearer "+k,"Content-Type":"application/json","Prefer":"return=minimal"},body:JSON.stringify(payload)})}if(r.ok)showToast("Saved to DB!","success");else throw new Error("HTTP "+r.status)}catch(e){showToast("Save failed: "+e.message,"error")}}
+
+async function loadFromDB(){var u=document.getElementById("cfg-supa-url").value.trim();var k=document.getElementById("cfg-supa-key").value.trim();var tbl=document.getElementById("cfg-supa-table").value.trim()||"product_roi";var pid=document.getElementById("cfg-product-id").value.trim();if(!u||!k){showToast("Configure Supabase","error");return}try{var r=await fetch(u+"/rest/v1/"+tbl+"?product_id=eq."+pid+"&select=*",{headers:{"apikey":k,"Authorization":"Bearer "+k}});var d=await r.json();if(!d.length){showToast("No data for "+pid,"error");return}var row=d[0];if(row.dev_costs)devC=row.dev_costs;if(row.revenue_scenarios)revD=row.revenue_scenarios;if(row.cannibal_scenarios)canD=row.cannibal_scenarios;if(row.project_name)document.getElementById("cfg-proj-name").value=row.project_name;if(row.hub_name)document.getElementById("cfg-hub").value=row.hub_name;if(row.owner)document.getElementById("cfg-owner").value=row.owner;if(row.phase)document.getElementById("cfg-phase").value=row.phase;if(row.settings){var s=row.settings;if(s.wacc!=null)document.getElementById("cfg-wacc").value=s.wacc;if(s.cannibal_dt!=null)document.getElementById("cfg-cannibal-dt").value=s.cannibal_dt;if(s.burden!=null)document.getElementById("cfg-burden").value=s.burden;if(s.pct_service!=null)document.getElementById("cfg-pct-service").value=s.pct_service;if(s.pct_warranty!=null)document.getElementById("cfg-pct-warranty").value=s.pct_warranty;if(s.pct_invprov!=null)document.getElementById("cfg-pct-invprov").value=s.pct_invprov;if(s.pct_netops!=null)document.getElementById("cfg-pct-netops").value=s.pct_netops;if(s.pct_othercos!=null)document.getElementById("cfg-pct-othercos").value=s.pct_othercos;if(s.pct_sales!=null)document.getElementById("cfg-pct-sales").value=s.pct_sales;if(s.pct_mktg!=null)document.getElementById("cfg-pct-mktg").value=s.pct_mktg;if(s.pct_ga!=null)document.getElementById("cfg-pct-ga").value=s.pct_ga}renderDev();renderRev();renderDash();showToast("Loaded from DB!","success")}catch(e){showToast("Load failed: "+e.message,"error")}}
+
+function exportCSV(){var NL=String.fromCharCode(10);var csv="WACC %,"+gv("cfg-wacc")+NL+"Burden %,"+gv("cfg-burden")+NL+"Cannibal DT %,"+gv("cfg-cannibal-dt")+NL+NL;var hdr="Item,"+YL.join(",")+",TOTAL"+NL;["low","mid","high"].forEach(function(s){var P=compPnl(s);csv+="=== "+s.toUpperCase()+" ==="+NL+hdr;[{l:"Revenue",d:P.rev},{l:"COGS",d:P.cogs},{l:"Gross Margin",d:P.gm},{l:"Dev Cost",d:P.dev},{l:"PBIT",d:P.pbit},{l:"Cum PBIT",d:P.cpbit}].forEach(function(r){var t=0;csv+=r.l+","+r.d.map(function(v){t+=Math.round(v);return Math.round(v)}).join(",")+","+t+NL});csv+=NL});var a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);a.download="ROI_Export.csv";a.click();showToast("CSV exported!","success")}
+function toggleAI(){document.body.classList.toggle("ai-open")}
+function collectCtx(){var P=compPnl("mid");var cf=getCF("mid");var wacc=gv("cfg-wacc")/100;var td=getDevTot();return{project:document.getElementById("cfg-proj-name")?.value,hub:document.getElementById("cfg-hub")?.value,phase:document.getElementById("cfg-phase")?.value,dev_total:td.reduce(function(a,b){return a+b},0),rev_mid:P.rev.reduce(function(a,b){return a+b},0),irr:calcIRR(cf),npv:calcNPV(cf,wacc),pbit:P.pbit.reduce(function(a,b){return a+b},0),wacc:wacc,margin:P.rev.reduce(function(a,b){return a+b},0)?P.gm.reduce(function(a,b){return a+b},0)/P.rev.reduce(function(a,b){return a+b},0):0}}
+function addMsg(role,text){var el=document.getElementById("aiMsgs");var d=document.createElement("div");d.className="msg msg-"+(role==="user"?"u":"a");d.textContent=text;el.appendChild(d);el.scrollTop=el.scrollHeight}
+function addTyping(){var el=document.getElementById("aiMsgs");var d=document.createElement("div");d.className="ai-typ";d.id="typing";d.innerHTML='<div class="db"></div><div class="db"></div><div class="db"></div>';el.appendChild(d);el.scrollTop=el.scrollHeight}
+function rmTyping(){var t=document.getElementById("typing");if(t)t.remove()}
+var QA={analyze:"Provide comprehensive ROI analysis. Cover revenue, cost, profitability, viability.",gonogo:"Give Go/No-Go recommendation. Compare IRR vs WACC, NPV, BET, BEAR vs benchmarks.",risk:"Identify top risks: market, technical, competitive, margin, timeline. Quantify each.",compare:"Compare Low, Mid, High scenarios. What drives variance?",optimize:"Suggest ROI improvements: cost reduction, revenue enhancement, timeline acceleration.",exec:"Generate executive summary for PMB review with key metrics and recommendation."};
+function quickAction(id){sendAIMessage(QA[id])}
+var SYS_PROMPT="You are the ActionHub OS ROI AI Advisor \u2014 a senior financial analyst for semiconductor ATE investments at Teradyne.\nExpertise: Product lifecycle (Ph0-Ph4), IRR, NPV, BET, BEAR, PBIT, UltraFLEX platform.\nGo/No-Go: GO if IRR>WACC AND NPV>0. CAUTION if only one met. NO-GO if neither.\nBenchmarks: Gross margin 55-70%, IRR 15-25%, BET<4yrs, BEAR<2yrs, Dev:Revenue 1:4+.\nAlways reference specific numbers, compare to benchmarks, provide actionable recommendations.";
+async function testAI(){var url=document.getElementById("cfg-ai-url").value.trim();var key=document.getElementById("cfg-ai-key").value.trim();if(!url){showToast("Enter Worker URL","error");return}if(!key){showToast("Enter API Key","error");return}try{var r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:20,messages:[{role:"user",content:"Say OK"}],apiKey:key})});var d=await r.json();if(!r.ok)throw new Error(d.error&&d.error.message||"HTTP "+r.status);var reply=d.content&&d.content[0]&&d.content[0].text||"?";document.getElementById("aiDot").classList.add("ok");document.getElementById("aiLbl").textContent="Connected! "+reply;showToast("AI connected!","success")}catch(e){showToast("AI: "+e.message,"error")}}
+async function sendAIMessage(override){if(aiOn)return;var inp=document.getElementById("aiIn");var text=override||inp.value.trim();if(!text)return;if(!override)inp.value="";var url=document.getElementById("cfg-ai-url").value.trim();var key=document.getElementById("cfg-ai-key").value.trim();if(!url||!key){showToast("Configure Worker URL and API Key in Settings","error");return}addMsg("user",text);aiHist.push({role:"user",content:text});aiOn=true;document.getElementById("aiSend").disabled=true;addTyping();var ctx=collectCtx();var sys=SYS_PROMPT+"\n\n## Current ROI Data\n```json\n"+JSON.stringify(ctx)+"\n```";try{var r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-5",max_tokens:4096,system:sys,messages:aiHist.slice(-10),apiKey:key})});var d=await r.json();rmTyping();if(!r.ok)throw new Error(d.error&&d.error.message||JSON.stringify(d.error)||"Error "+r.status);var rb=d.content&&d.content.find(function(b){return b.type==="text"});var reply=rb?rb.text:"No response";addMsg("assistant",reply);aiHist.push({role:"assistant",content:reply})}catch(e){rmTyping();addMsg("assistant","Error: "+e.message)}aiOn=false;document.getElementById("aiSend").disabled=false}
+function saveAllSettings(){var cfg={proxyUrl:document.getElementById("cfg-ai-url").value,claudeKey:document.getElementById("cfg-ai-key").value,supaUrl:document.getElementById("cfg-supa-url").value,supaKey:document.getElementById("cfg-supa-key").value};localStorage.setItem("roiHubConfig",JSON.stringify(cfg));showToast("Settings saved!","success")}
+function loadAllSettings(){try{var cfg=JSON.parse(localStorage.getItem("roiHubConfig")||"{}");if(cfg.proxyUrl)document.getElementById("cfg-ai-url").value=cfg.proxyUrl;if(cfg.claudeKey)document.getElementById("cfg-ai-key").value=cfg.claudeKey;if(cfg.supaUrl)document.getElementById("cfg-supa-url").value=cfg.supaUrl;if(cfg.supaKey)document.getElementById("cfg-supa-key").value=cfg.supaKey}catch(e){}}
+function showSchema(){var sql='-- Product ROI main table (one row per product)\nCREATE TABLE product_roi (\n  product_id     TEXT PRIMARY KEY,\n  product_tag    TEXT NOT NULL,\n  project_name   TEXT,\n  hub_name       TEXT,\n  phase          TEXT DEFAULT \'Ph0\',\n  owner          TEXT,\n  settings       JSONB DEFAULT \'{}\',\n  dev_costs      JSONB DEFAULT \'{}\',\n  revenue_scenarios  JSONB DEFAULT \'{}\',\n  cannibal_scenarios JSONB DEFAULT \'{}\',\n  computed_metrics   JSONB DEFAULT \'{}\',\n  created_at     TIMESTAMPTZ DEFAULT now(),\n  updated_at     TIMESTAMPTZ DEFAULT now()\n);\n\n-- Snapshot history (dev / rev versioned independently)\nCREATE TABLE roi_snapshots (\n  id             SERIAL PRIMARY KEY,\n  product_id     TEXT REFERENCES product_roi(product_id)\n                   ON DELETE CASCADE,\n  snapshot_type  TEXT CHECK (snapshot_type IN (\'dev\',\'rev\')),\n  label          TEXT NOT NULL,\n  data           JSONB NOT NULL,\n  created_at     TIMESTAMPTZ DEFAULT now()\n);\n\n-- Portfolio dashboard view\nCREATE VIEW roi_portfolio AS\nSELECT product_id, product_tag, project_name,\n       hub_name, phase, owner,\n       computed_metrics->\'mid\'->>\'irr\'    AS irr_mid,\n       computed_metrics->\'mid\'->>\'npv\'    AS npv_mid,\n       computed_metrics->\'mid\'->>\'go_nogo\' AS go_nogo,\n       updated_at\nFROM product_roi ORDER BY updated_at DESC;';var ov=document.createElement("div");ov.className="schema-overlay";ov.onclick=function(e){if(e.target===ov)ov.remove()};var md=document.createElement("div");md.className="schema-modal";md.innerHTML='<button class="close-btn" onclick="this.parentElement.parentElement.remove()">\u2715</button><h2>\U0001f4cb Database Schema</h2>';var pre=document.createElement("pre");pre.textContent=sql;md.appendChild(pre);var btns=document.createElement("div");btns.style.cssText="margin-top:12px;display:flex;gap:8px";btns.innerHTML='<button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText(this.parentElement.previousElementSibling.textContent);showToast(\'SQL copied!\',\'success\')">Copy SQL</button>';md.appendChild(btns);ov.appendChild(md);document.body.appendChild(ov)}
+function getSnapKey(type){return "roi_snapshots_"+PRODUCT_TAG+"_"+type}
+function getSnapshots(type){try{return JSON.parse(localStorage.getItem(getSnapKey(type))||"[]")}catch(e){return[]}}
+function saveSnapshots(type,arr){localStorage.setItem(getSnapKey(type),JSON.stringify(arr))}
+function refreshSnapSelects(){var types=["dev","rev"];types.forEach(function(type){var snaps=getSnapshots(type);var h='<option value="">-- select snapshot --</option>';snaps.forEach(function(s,i){h+='<option value="'+i+'">'+s.label+'</option>'});var el=document.getElementById("snap-sel-"+type);if(el)el.innerHTML=h})}
+function collectSettings(){return{burden:gv("cfg-burden"),cannibal_dt:gv("cfg-cannibal-dt"),wacc:gv("cfg-wacc"),pct_service:gv("cfg-pct-service"),pct_warranty:gv("cfg-pct-warranty"),pct_invprov:gv("cfg-pct-invprov"),pct_netops:gv("cfg-pct-netops"),pct_othercos:gv("cfg-pct-othercos"),pct_sales:gv("cfg-pct-sales"),pct_mktg:gv("cfg-pct-mktg"),pct_ga:gv("cfg-pct-ga")}}
+function fmtSnapLabel(){var d=new Date();var pad=function(n){return n<10?"0"+n:""+n};return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+" "+pad(d.getHours())+":"+pad(d.getMinutes())}
+function saveSnapshot(type){var label=prompt("Snapshot label:",fmtSnapLabel());if(!label)return;var snaps=getSnapshots(type);var entry={label:label,timestamp:new Date().toISOString(),settings:collectSettings()};if(type==="dev"){entry.devC=JSON.parse(JSON.stringify(devC))}else{entry.revD=JSON.parse(JSON.stringify(revD));entry.canD=JSON.parse(JSON.stringify(canD))}snaps.push(entry);saveSnapshots(type,snaps);refreshSnapSelects();showToast("Snapshot saved: "+label,"success")}
+function restoreSettings(st){if(!st)return;var map={burden:"cfg-burden",cannibal_dt:"cfg-cannibal-dt",wacc:"cfg-wacc",pct_service:"cfg-pct-service",pct_warranty:"cfg-pct-warranty",pct_invprov:"cfg-pct-invprov",pct_netops:"cfg-pct-netops",pct_othercos:"cfg-pct-othercos",pct_sales:"cfg-pct-sales",pct_mktg:"cfg-pct-mktg",pct_ga:"cfg-pct-ga"};Object.keys(st).forEach(function(k){var el=document.getElementById(map[k]);if(el&&st[k]!=null)el.value=st[k]})}
+function loadSnapshot(type){var sel=document.getElementById("snap-sel-"+type);if(!sel||sel.value===""){showToast("Select a snapshot first","error");return}var snaps=getSnapshots(type);var s=snaps[parseInt(sel.value)];if(!s){showToast("Snapshot not found","error");return}if(s.settings)restoreSettings(s.settings);if(type==="dev"){if(s.devC){devC=JSON.parse(JSON.stringify(s.devC))}renderDev()}else{if(s.revD){revD=JSON.parse(JSON.stringify(s.revD))}if(s.canD){canD=JSON.parse(JSON.stringify(s.canD))}renderRev()}recalcAll();showToast("Loaded: "+s.label,"success")}
+function autoLoadSnapshot(type){var sel=document.getElementById("snap-sel-"+type);if(!sel||sel.value==="")return;loadSnapshot(type)}
+function deleteSnapshot(type){var sel=document.getElementById("snap-sel-"+type);if(!sel||sel.value===""){showToast("Select a snapshot first","error");return}var snaps=getSnapshots(type);var idx=parseInt(sel.value);var lbl=snaps[idx].label;if(!confirm("Delete snapshot '"+lbl+"'?"))return;snaps.splice(idx,1);saveSnapshots(type,snaps);refreshSnapSelects();showToast("Deleted: "+lbl,"info")}
+
+window.addEventListener("DOMContentLoaded",function(){loadAllSettings();renderDev();refreshSnapSelects();document.getElementById("main-title").innerHTML="ROI <span>Hub</span> OS &#8212; "+PRODUCT_TAG;renderRev();renderDash()});
+</__SCRIPT__>
+</body>
+</html>
+
+</script>
+
+
+<script>
+'use strict';
+const CONFIG=(function(){const s=JSON.parse(localStorage.getItem('roiStudioConfig')||'{}');const a=JSON.parse(localStorage.getItem('agentStudioConfig')||'{}');
+  function stripSlash(u){return u?u.replace(/\/+$/,''):'';}
+  function validSbKey(k){return (k&&!k.startsWith('ghp_')&&!k.startsWith('github_pat_'))?k:'';}
+  return{
+  proxyUrl:stripSlash(s.proxyUrl||a.proxyUrl||''),claudeKey:s.claudeKey||a.claudeKey||'',
+  supabaseUrl:stripSlash(s.supabaseUrl||a.supabaseUrl||''),supabaseProjectRef:s.supabaseProjectRef||a.supabaseProjectRef||'',
+  supabaseMgmtToken:s.supabaseMgmtToken||a.supabaseMgmtToken||'',supabaseAnonKey:validSbKey(s.supabaseAnonKey)||validSbKey(a.supabaseAnonKey)||'',
+  githubToken:s.githubToken||a.githubToken||'',githubUser:s.githubUser||a.githubUser||'xujeffersoninusa'};})();
+
+const toast=(msg,type='')=>{const t=document.getElementById('toast');t.textContent=msg;t.className=type?'show '+type:'show';setTimeout(()=>t.className='',3200);};
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+let pipeline={step:1,blueprint:null,generatedSQL:'',generatedHTML:'',currentCodeTab:'sql'};
+
+function openSettings(){
+  const s=JSON.parse(localStorage.getItem('roiStudioConfig')||localStorage.getItem('agentStudioConfig')||'{}');
+  function validSbKey(k){return (k&&!k.startsWith('ghp_')&&!k.startsWith('github_pat_'))?k:'';}
+  document.getElementById('cfgSbUrl').value=(s.supabaseUrl||CONFIG.supabaseUrl||'').replace(/\/+$/,'');
+  document.getElementById('cfgSbKey').value=validSbKey(s.supabaseAnonKey)||CONFIG.supabaseAnonKey||'';
+  document.getElementById('cfgGhToken').value=s.githubToken||CONFIG.githubToken||'';
+  document.getElementById('cfgGhUser').value=s.githubUser||CONFIG.githubUser||'xujeffersoninusa';
+  document.getElementById('cfgProxyUrl').value=(s.proxyUrl||CONFIG.proxyUrl||'').replace(/\/+$/,'');
+  document.getElementById('cfgAiKey').value=s.claudeKey||CONFIG.claudeKey||'';
+  document.getElementById('cfgMgmtToken').value=s.supabaseMgmtToken||CONFIG.supabaseMgmtToken||'';
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings(){document.getElementById('settingsModal').classList.remove('show');}
+function saveSettings(){
+  const sbUrl=document.getElementById('cfgSbUrl').value.trim().replace(/\/+$/,'');
+  const sbKey=document.getElementById('cfgSbKey').value.trim();
+  if(sbKey&&(sbKey.startsWith('ghp_')||sbKey.startsWith('github_pat_'))){toast('Error: That looks like a GitHub token, not a Supabase Anon Key. Supabase keys start with eyJ...','error');return;}
+  const updated={supabaseUrl:sbUrl,supabaseProjectRef:sbUrl.match(/https:\/\/([^.]+)/)?.[1]||'',
+    supabaseAnonKey:sbKey,supabaseMgmtToken:document.getElementById('cfgMgmtToken').value.trim(),
+    githubToken:document.getElementById('cfgGhToken').value.trim(),githubUser:document.getElementById('cfgGhUser').value.trim(),
+    proxyUrl:document.getElementById('cfgProxyUrl').value.trim().replace(/\/+$/,''),claudeKey:document.getElementById('cfgAiKey').value.trim()};
+  localStorage.setItem('roiStudioConfig',JSON.stringify(updated));Object.assign(CONFIG,updated);
+  closeSettings();toast('Credentials saved ✓','success');
+}
+async function testConnection(){
+  var u=(document.getElementById('cfgSbUrl')?document.getElementById('cfgSbUrl').value.trim():CONFIG.supabaseUrl||'').replace(/\/+$/,'');
+  var k=document.getElementById('cfgSbKey')?document.getElementById('cfgSbKey').value.trim():CONFIG.supabaseAnonKey||'';
+  if(!u||!k){toast('Enter Supabase URL and Anon Key','error');return;}
+  if(k.startsWith('ghp_')||k.startsWith('github_pat_')){toast('Error: That is a GitHub token, not a Supabase key','error');return;}
+  try{const r=await fetch(u+'/rest/v1/roi_hub_registry?select=count',{headers:{'apikey':k,'Authorization':'Bearer '+k}});
+  if(r.ok)toast('Connected to Supabase ✓','success');else toast('Connection failed: HTTP '+r.status,'error');}catch(e){toast('Error: '+e.message,'error');}
+}
+
+function goStep(n){for(let i=1;i<=5;i++){const p=document.getElementById('step'+i);if(p)p.classList.toggle('active',i===n);const d=document.getElementById('sd'+i);if(d&&!d.classList.contains('done')){d.classList.toggle('active',i===n);d.classList.toggle('pending',i!==n);}}pipeline.step=n;}
+function markStepDone(n){const d=document.getElementById('sd'+n);if(d){d.classList.remove('active','pending');d.classList.add('done');d.textContent='✓';}const l=document.getElementById('sl'+n);if(l)l.classList.add('done');}
+
+const EXAMPLES={
+  trishul:{name:'HLA Upgrade — mmW24 Field Cal',hub:'Trishul',bu:'Semiconductor Test',code:'TRISHUL-MMW24-001',phase:'Ph3',owner:'Jefferson Xu',years:8,currency:'$K',wacc:12,burden:30,cannibal:0,asp:425,cogs:170,pctSvc:2,pctWar:2,pctInv:1,pctNet:1,pctOcos:0.5,pctSales:3,pctMktg:3,pctGA:1,notes:'mmW24 HLA upgrade for field calibration.'},
+  ultraflex:{name:'UltraFlex Plus Configurator',hub:'UltraFlexPlus',bu:'Semiconductor Test',code:'UFP-CFG-001',phase:'Ph2',owner:'Jefferson Xu',years:10,currency:'$K',wacc:10,burden:35,cannibal:5,asp:800,cogs:320,pctSvc:3,pctWar:2.5,pctInv:1,pctNet:1,pctOcos:0.5,pctSales:4,pctMktg:3.5,pctGA:1.5,notes:'UltraFlex Plus next-gen configurator platform.'},
+  j750:{name:'J750 Next Gen Platform',hub:'J750',bu:'Semiconductor Test',code:'J750-NXGN-001',phase:'Ph1',owner:'Jefferson Xu',years:12,currency:'$K',wacc:11,burden:28,cannibal:8,asp:350,cogs:140,pctSvc:2,pctWar:2,pctInv:1.5,pctNet:1,pctOcos:0.5,pctSales:3,pctMktg:2.5,pctGA:1,notes:'J750 next-gen digital test platform.'}
+};
+
+function fillExample(key){const e=EXAMPLES[key];if(!e)return;
+  document.getElementById('iName').value=e.name;document.getElementById('iHub').value=e.hub;document.getElementById('iBU').value=e.bu;
+  document.getElementById('iCode').value=e.code;document.getElementById('iPhase').value=e.phase;document.getElementById('iOwner').value=e.owner;
+  document.getElementById('iYears').value=e.years;document.getElementById('iCurrency').value=e.currency;
+  document.getElementById('iWacc').value=e.wacc;document.getElementById('iBurden').value=e.burden;document.getElementById('iCannibal').value=e.cannibal;
+  document.getElementById('iASP').value=e.asp;document.getElementById('iCOGS').value=e.cogs;
+  document.getElementById('iPctSvc').value=e.pctSvc;document.getElementById('iPctWar').value=e.pctWar;document.getElementById('iPctInv').value=e.pctInv;
+  document.getElementById('iPctNet').value=e.pctNet;document.getElementById('iPctOcos').value=e.pctOcos;document.getElementById('iPctSales').value=e.pctSales;
+  document.getElementById('iPctMktg').value=e.pctMktg;document.getElementById('iPctGA').value=e.pctGA;document.getElementById('iNotes').value=e.notes;
+  toast('Example loaded: '+e.name,'success');
+}
+function clearIntake(){['iName','iHub','iCode','iOwner','iNotes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('iYears').value=10;document.getElementById('iWacc').value=12;document.getElementById('iBurden').value=30;
+  document.getElementById('iCannibal').value=0;document.getElementById('iASP').value=500;document.getElementById('iCOGS').value=200;
+  document.getElementById('iPctSvc').value=2;document.getElementById('iPctWar').value=2;document.getElementById('iPctInv').value=1;
+  document.getElementById('iPctNet').value=1;document.getElementById('iPctOcos').value=0.5;document.getElementById('iPctSales').value=3;
+  document.getElementById('iPctMktg').value=3;document.getElementById('iPctGA').value=1;}
+
+function generateBlueprint(){
+  const name=document.getElementById('iName').value.trim(),code=document.getElementById('iCode').value.trim();
+  if(!name||!code){toast('Fill Product Name and Product Code','error');return;}
+  const slug=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  const team=document.getElementById('iBU').value;
+  const token=team.toLowerCase().replace(/[^a-z0-9]+/g,'')+'roi2026';
+  pipeline.blueprint={hub_id:slug,hub_name:name,hub_short:document.getElementById('iHub').value.trim()||slug,
+    product_code:code,bu:team,phase:document.getElementById('iPhase').value,owner:document.getElementById('iOwner').value.trim(),
+    years:parseInt(document.getElementById('iYears').value)||10,currency:document.getElementById('iCurrency').value,
+    wacc:parseFloat(document.getElementById('iWacc').value)||12,burden:parseFloat(document.getElementById('iBurden').value)||30,
+    cannibal_dt:parseFloat(document.getElementById('iCannibal').value)||0,default_asp:parseFloat(document.getElementById('iASP').value)||500,
+    default_cogs:parseFloat(document.getElementById('iCOGS').value)||200,
+    pct_svc:parseFloat(document.getElementById('iPctSvc').value)||2,pct_war:parseFloat(document.getElementById('iPctWar').value)||2,
+    pct_inv:parseFloat(document.getElementById('iPctInv').value)||1,pct_net:parseFloat(document.getElementById('iPctNet').value)||1,
+    pct_ocos:parseFloat(document.getElementById('iPctOcos').value)||0.5,pct_sales:parseFloat(document.getElementById('iPctSales').value)||3,
+    pct_mktg:parseFloat(document.getElementById('iPctMktg').value)||3,pct_ga:parseFloat(document.getElementById('iPctGA').value)||1,
+    access_token:token,db_table:slug.replace(/-/g,'_')+'_roi',notes:document.getElementById('iNotes').value.trim()};
+  renderBlueprint(pipeline.blueprint);markStepDone(1);goStep(2);toast('Blueprint generated ✓','success');
+}
+
+function renderBlueprint(bp){document.getElementById('blueprintContent').innerHTML=`
+  <div class="spec-grid"><div class="spec-section"><h3>Product Identity</h3>
+    <div class="spec-row"><span class="sr-label">Hub ID</span><span class="sr-value">${esc(bp.hub_id)}</span></div>
+    <div class="spec-row"><span class="sr-label">Product Name</span><span class="sr-value">${esc(bp.hub_name)}</span></div>
+    <div class="spec-row"><span class="sr-label">Hub Short</span><span class="sr-value">${esc(bp.hub_short)}</span></div>
+    <div class="spec-row"><span class="sr-label">Product Code</span><span class="sr-value">${esc(bp.product_code)}</span></div>
+    <div class="spec-row"><span class="sr-label">Business Unit</span><span class="sr-value">${esc(bp.bu)}</span></div>
+    <div class="spec-row"><span class="sr-label">Phase</span><span class="sr-value">${esc(bp.phase)}</span></div>
+    <div class="spec-row"><span class="sr-label">Owner</span><span class="sr-value">${esc(bp.owner)}</span></div>
+    <div class="spec-row"><span class="sr-label">Years</span><span class="sr-value">${bp.years}</span></div>
+    <div class="spec-row"><span class="sr-label">Currency</span><span class="sr-value">${esc(bp.currency)}</span></div></div>
+  <div class="spec-section"><h3>Financial Parameters</h3>
+    <div class="spec-row"><span class="sr-label">WACC</span><span class="sr-value">${bp.wacc}%</span></div>
+    <div class="spec-row"><span class="sr-label">Burden</span><span class="sr-value">${bp.burden}%</span></div>
+    <div class="spec-row"><span class="sr-label">Cannibal DT</span><span class="sr-value">${bp.cannibal_dt}%</span></div>
+    <div class="spec-row"><span class="sr-label">Default ASP</span><span class="sr-value">${bp.currency.charAt(0)}${bp.default_asp}</span></div>
+    <div class="spec-row"><span class="sr-label">Default COGS</span><span class="sr-value">${bp.currency.charAt(0)}${bp.default_cogs}</span></div></div>
+  <div class="spec-section"><h3>% of Sales</h3>
+    <div class="spec-row"><span class="sr-label">Service</span><span class="sr-value">${bp.pct_svc}%</span></div>
+    <div class="spec-row"><span class="sr-label">Warranty</span><span class="sr-value">${bp.pct_war}%</span></div>
+    <div class="spec-row"><span class="sr-label">Inv Prov</span><span class="sr-value">${bp.pct_inv}%</span></div>
+    <div class="spec-row"><span class="sr-label">Net Ops</span><span class="sr-value">${bp.pct_net}%</span></div>
+    <div class="spec-row"><span class="sr-label">Other COS</span><span class="sr-value">${bp.pct_ocos}%</span></div>
+    <div class="spec-row"><span class="sr-label">Sales</span><span class="sr-value">${bp.pct_sales}%</span></div>
+    <div class="spec-row"><span class="sr-label">Marketing</span><span class="sr-value">${bp.pct_mktg}%</span></div>
+    <div class="spec-row"><span class="sr-label">G&A</span><span class="sr-value">${bp.pct_ga}%</span></div></div>
+  <div class="spec-section"><h3>Infrastructure</h3>
+    <div class="spec-row"><span class="sr-label">Access Token</span><span class="sr-value" style="color:var(--amber);font-family:monospace;font-size:11px;">${esc(bp.access_token)}</span></div>
+    <div class="spec-row"><span class="sr-label">DB Table</span><span class="sr-value" style="color:var(--green);font-family:monospace;">${esc(bp.db_table)}</span></div>
+    <div class="spec-row"><span class="sr-label">GitHub Repo</span><span class="sr-value">${esc(bp.hub_id)}-roi-hub</span></div></div></div>`;}
+
+function approveBlueprint(){
+  if(!pipeline.blueprint){toast('Generate a blueprint first','error');return;}
+  const bp=pipeline.blueprint;pipeline.generatedSQL=generateSQL(bp);pipeline.generatedHTML=generateHTML(bp);
+  pipeline.currentCodeTab='sql';document.getElementById('codeOutput').textContent=pipeline.generatedSQL;
+  renderDeploy(bp);renderValidation(bp);renderArtifactSummary(bp);markStepDone(2);goStep(3);toast('Code generated ✓','success');
+}
+
+function renderArtifactSummary(bp){
+  var sql=pipeline.generatedSQL||'';var html=pipeline.generatedHTML||'';
+  var el=document.getElementById('artifactSummary');if(!el)return;
+  var row=function(label,value,color){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);"><span style="color:var(--muted)">'+label+'</span><span style="font-weight:700;'+(color?'color:'+color:'')+';font-size:13px;">'+value+'</span></div>';};
+  el.innerHTML=
+    row('Hub',esc(bp.hub_short||bp.hub_id))+
+    row('DB table',esc(bp.db_table),'var(--green)')+
+    row('Access token','<span style="font-family:monospace;font-size:11px;">'+esc(bp.access_token)+'</span>','var(--amber)')+
+    row('GitHub repo',esc(bp.hub_id)+'-roi-hub')+
+    row('SQL lines',String(sql.split('\n').length))+
+    row('HTML lines',String(html.split('\n').length));
+}
+
+
+function generateSQL(bp){
+  const params=JSON.stringify({wacc:bp.wacc,burden:bp.burden,cannibal_dt:bp.cannibal_dt,pct_svc:bp.pct_svc,pct_war:bp.pct_war,pct_inv:bp.pct_inv,pct_net:bp.pct_net,pct_ocos:bp.pct_ocos,pct_sales:bp.pct_sales,pct_mktg:bp.pct_mktg,pct_ga:bp.pct_ga});
+  const meta=JSON.stringify({product_name:bp.hub_name,hub_short:bp.hub_short,bu:bp.bu,phase:bp.phase,owner:bp.owner,years:bp.years,currency:bp.currency});
+  return `-- ROI Hub: ${bp.hub_name} | ${bp.product_code} | ${new Date().toISOString()}
+CREATE TABLE IF NOT EXISTS ${bp.db_table} (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  product_id TEXT NOT NULL DEFAULT '${bp.product_code}',
+  snapshot_name TEXT NOT NULL DEFAULT 'default',
+  dev_costs JSONB DEFAULT '{}', revenue JSONB DEFAULT '{}', cannibalization JSONB DEFAULT '{}',
+  params JSONB DEFAULT '${params.replace(/'/g,"''")}',
+  metadata JSONB DEFAULT '${meta.replace(/'/g,"''")}',
+  is_active BOOLEAN DEFAULT true, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
+CREATE INDEX IF NOT EXISTS idx_${bp.db_table}_pid ON ${bp.db_table}(product_id);
+ALTER TABLE ${bp.db_table} ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='anon_' || '${bp.db_table}' AND tablename='${bp.db_table}') THEN CREATE POLICY "anon_${bp.db_table}" ON ${bp.db_table} FOR ALL USING (true) WITH CHECK (true); END IF; END $$;
+
+CREATE TABLE IF NOT EXISTS roi_hub_registry (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY, hub_id TEXT UNIQUE NOT NULL, hub_name TEXT NOT NULL,
+  hub_short TEXT, product_code TEXT, bu TEXT, phase TEXT, owner TEXT, db_table TEXT, hub_url TEXT,
+  access_token TEXT, status TEXT DEFAULT 'live', hub_type TEXT DEFAULT 'roi',
+  metadata JSONB DEFAULT '{}', created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
+ALTER TABLE roi_hub_registry ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='anon_roi_hub_registry' AND tablename='roi_hub_registry') THEN CREATE POLICY "anon_roi_hub_registry" ON roi_hub_registry FOR ALL USING (true) WITH CHECK (true); END IF; END $$;
+
+INSERT INTO roi_hub_registry (hub_id,hub_name,hub_short,product_code,bu,phase,owner,db_table,access_token,hub_url,metadata)
+VALUES ('${bp.hub_id}','${bp.hub_name.replace(/'/g,"''")}','${bp.hub_short.replace(/'/g,"''")}','${bp.product_code}','${bp.bu}','${bp.phase}','${bp.owner.replace(/'/g,"''")}','${bp.db_table}','${bp.access_token}',
+  'https://${CONFIG.githubUser||'xujeffersoninusa'}.github.io/${bp.hub_id}-roi-hub/?access=${encodeURIComponent(bp.access_token)}','${JSON.stringify({years:bp.years,currency:bp.currency,wacc:bp.wacc,burden:bp.burden,default_asp:bp.default_asp,npv:null,irr:null,dev_cost:null})}')
+ON CONFLICT (hub_id) DO UPDATE SET hub_name=EXCLUDED.hub_name,updated_at=now(),status='live';`;
+}
+
+function generateHTML(bp){
+  let html=document.getElementById('roiHubTemplate').innerHTML;
+  const r={'{{HUB_NAME}}':bp.hub_name,'{{PRODUCT_SHORT}}':bp.hub_short,'{{PRODUCT_NAME}}':bp.hub_name,'{{PRODUCT_ID}}':bp.product_code,
+    '{{HUB_SHORT}}':bp.hub_short,'{{DB_TABLE}}':bp.db_table,'{{ACCESS_TOKEN}}':bp.access_token,
+    '{{SB_URL}}':CONFIG.supabaseUrl||'','{{PROXY_URL}}':CONFIG.proxyUrl||'',
+    '{{WACC}}':String(bp.wacc),'{{BURDEN}}':String(bp.burden),'{{CANNIBAL_DT}}':String(bp.cannibal_dt),
+    '{{NUM_YEARS}}':String(bp.years),'{{DEFAULT_ASP}}':String(bp.default_asp),'{{DEFAULT_COGS}}':String(bp.default_cogs),
+    '{{OWNER}}':bp.owner,'{{PCT_SVC}}':String(bp.pct_svc),'{{PCT_WAR}}':String(bp.pct_war),'{{PCT_INV}}':String(bp.pct_inv),
+    '{{PCT_NET}}':String(bp.pct_net),'{{PCT_OCOS}}':String(bp.pct_ocos),'{{PCT_SALES}}':String(bp.pct_sales),
+    '{{PCT_MKTG}}':String(bp.pct_mktg),'{{PCT_GA}}':String(bp.pct_ga)};
+  for(const[k,v]of Object.entries(r))html=html.split(k).join(v);
+  html=html.replace(/<__SCRIPT__>/g,'<script>');html=html.replace(/<\/__SCRIPT__>/g,'<\/script>');
+  return html;
+}
+
+function switchCodeTab(tab){pipeline.currentCodeTab=tab;document.querySelectorAll('.code-tab').forEach(t=>t.classList.toggle('active',t.dataset.tab===tab));
+  document.getElementById('codeOutput').textContent=tab==='sql'?pipeline.generatedSQL:pipeline.generatedHTML;}
+function copyCode(){navigator.clipboard.writeText(document.getElementById('codeOutput').textContent);toast('Copied ✓','success');}
+function downloadFile(type){const c=type==='sql'?pipeline.generatedSQL:pipeline.generatedHTML;const bp=pipeline.blueprint;
+  const fn=type==='sql'?bp.db_table+'_schema.sql':bp.hub_id+'_roi_hub.html';const a=document.createElement('a');
+  a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(c);a.download=fn;a.click();toast('Downloaded: '+fn,'success');}
+
+function b64encUTF8(str){const bytes=new TextEncoder().encode(str);let bin='';bytes.forEach(b=>bin+=String.fromCharCode(b));return btoa(bin);}
+
+async function startAutoProvision(){
+  if(!CONFIG.githubToken){toast('Add GitHub Token in ⚙️ Credentials','error');return;}
+  document.getElementById('autoProvisionLog').style.display='block';
+  document.getElementById('autoProvisionLog').scrollIntoView({behavior:'smooth'});
+  await autoProvision(pipeline.blueprint,pipeline.generatedSQL,pipeline.generatedHTML);markStepDone(3);
+}
+
+async function autoProvision(bp,sql,html){
+  const log=(msg,type='info')=>{const el=document.getElementById('autoLog');if(!el)return;const d=document.createElement('div');d.className='log-line log-'+type;d.innerHTML='<span class="log-time">'+new Date().toLocaleTimeString()+'</span> '+msg;el.appendChild(d);el.scrollTop=el.scrollHeight;};
+  const repoName=bp.hub_id+'-roi-hub';const hubUrl='https://'+CONFIG.githubUser+'.github.io/'+repoName+'/?access='+encodeURIComponent(bp.access_token);
+  // SQL
+  log('🗄️ Running SQL…');
+  try{if(CONFIG.proxyUrl&&CONFIG.supabaseMgmtToken){const r=await fetch(CONFIG.proxyUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:'supabase-sql',projectRef:CONFIG.supabaseProjectRef,mgmtToken:CONFIG.supabaseMgmtToken,sql:sql})});if(!r.ok)throw new Error('HTTP '+r.status);log('✅ SQL done','success');}else throw new Error('No proxy/token');}catch(e){log('⚠️ SQL failed ('+e.message+') — run manually','warn');}
+  // Repo
+  log('📁 Creating repo: '+repoName+'…');
+  try{const r=await fetch('https://api.github.com/user/repos',{method:'POST',headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Content-Type':'application/json','Accept':'application/vnd.github+json'},body:JSON.stringify({name:repoName,description:'ROI Hub — '+bp.hub_name,private:false,auto_init:false})});if(!r.ok){const e=await r.json().catch(()=>({}));if(e.errors?.[0]?.message?.includes('already exists'))log('ℹ️ Repo exists — updating','info');else throw new Error(e.message||'Failed');}else{log('✅ Repo created','success');await new Promise(r=>setTimeout(r,2000));}}catch(e){log('❌ Repo: '+e.message,'error');}
+  // Upload
+  log('⬆️ Uploading…');
+  try{let sha=null;const ck=await fetch('https://api.github.com/repos/'+CONFIG.githubUser+'/'+repoName+'/contents/index.html',{headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Accept':'application/vnd.github+json'}});if(ck.ok){sha=(await ck.json()).sha;}const body={message:'Deploy '+bp.hub_name,content:b64encUTF8(html)};if(sha)body.sha=sha;const r=await fetch('https://api.github.com/repos/'+CONFIG.githubUser+'/'+repoName+'/contents/index.html',{method:'PUT',headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Content-Type':'application/json','Accept':'application/vnd.github+json'},body:JSON.stringify(body)});if(!r.ok)throw new Error('HTTP '+r.status);log('✅ Uploaded','success');}catch(e){log('❌ Upload: '+e.message,'error');}
+  // Pages
+  log('🌐 Enabling Pages…');
+  try{const r=await fetch('https://api.github.com/repos/'+CONFIG.githubUser+'/'+repoName+'/pages',{method:'POST',headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Content-Type':'application/json','Accept':'application/vnd.github+json'},body:JSON.stringify({source:{branch:'main',path:'/'}})});if(!r.ok){const e=await r.json().catch(()=>({}));if(e.message?.includes('already')||r.status===409)log('ℹ️ Pages already on','info');else throw new Error(e.message);}else log('✅ Pages enabled','success');}catch(e){log('⚠️ Pages: '+e.message,'warn');}
+  log('═══════════════════════════════════════','info');log('🎉 Done!','success');
+  log('🔗 <a href="'+hubUrl+'" target="_blank" style="color:var(--accent);">'+hubUrl+'</a>','success');
+  log('🔑 Token: <strong style="color:var(--amber);">'+bp.access_token+'</strong>','info');
+  var rC=document.getElementById('chkRP');if(rC&&rC.checked){var hr={hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code||'',bu:bp.bu||'Semiconductor',phase:bp.phase||'Development',owner:bp.owner||'Jefferson Xu',hub_url:hubUrl,db_table:bp.db_table||'',access_token:bp.access_token||'',status:'live',npv:null,irr:null,dev_cost:null,metadata:JSON.stringify({years:bp.years,currency:bp.currency,wacc:bp.wacc,npv:null,irr:null,dev_cost:null,total_dev:null}),created_at:new Date().toISOString()};var lh=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');var ei=lh.findIndex(function(x){return x.hub_id===bp.hub_id;});if(ei>=0)lh.splice(ei,1);lh.push(hr);localStorage.setItem('roiHubRegistry',JSON.stringify(lh));log('Portfolio registered','success');}else{log('Portfolio skipped','info');}
+
+  document.getElementById('autoProvisionDone').style.display='flex';document.getElementById('hubLiveUrl').href=hubUrl;document.getElementById('hubLiveUrl').textContent=hubUrl;
+  loadStudioRegistry();
+}
+
+function renderDeploy(bp){const rn=bp.hub_id+'-roi-hub';document.getElementById('deployContent').innerHTML=`
+  <div class="spec-section"><h3>Manual Steps (if needed)</h3>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">🗄️ Run SQL</div><div class="val-desc">Supabase → SQL Editor → paste → Run. Creates <code style="color:var(--accent)">${esc(bp.db_table)}</code></div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">📁 Create GitHub repo</div><div class="val-desc"><code style="color:var(--accent)">${esc(rn)}</code> (public)</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">⬆️ Upload index.html</div><div class="val-desc">Save HTML and upload to repo root</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">🌐 Enable Pages</div><div class="val-desc">Settings → Pages → main → / (root)</div></div></div></div>`;}
+
+function renderValidation(bp){document.getElementById('validationContent').innerHTML=`
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">🔐 Security gate</div><div class="val-desc">Open without token = denied. With <code style="color:var(--accent)">?access=${esc(bp.access_token)}</code> = loads.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">📊 Dashboard KPIs</div><div class="val-desc">8 KPI cards render. Go/No-Go badge correct.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">💰 Dev Costs</div><div class="val-desc">Low/Mid/High scenarios. Burden auto-calc works.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">📈 Revenue</div><div class="val-desc">Units/ASP/COGS data entry. Revenue auto-calcs.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">📋 P&L</div><div class="val-desc">Full P&L renders. NPV/IRR at bottom.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">🎯 Sensitivity</div><div class="val-desc">NPV & IRR matrices with color coding.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">💾 Save/Load</div><div class="val-desc">Supabase persistence works.</div></div></div>
+  <div class="val-item" onclick="this.classList.toggle('checked')"><div class="val-check">✓</div><div><div class="val-title">🤖 AI Advisor</div><div class="val-desc">Chat responds with ROI context.</div></div></div>`;}
+
+function finishWizard(){const bp=pipeline.blueprint;if(!bp){toast('No blueprint','error');return;}
+  markStepDone(4);markStepDone(5);toast('🎉 Hub creation complete!','success');setTimeout(function(){showHubManager();},1200);}
+
+function showHubManager(){document.getElementById('studioShell').style.display='none';document.getElementById('hubManagerShell').style.display='block';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===1));loadHubGrid();}
+function hideHubManager(){document.getElementById('studioShell').style.display='block';document.getElementById('hubManagerShell').style.display='none';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));resetWizard();}
+
+function resetWizard(){
+  pipeline={step:1,blueprint:null,generatedSQL:'',generatedHTML:'',currentCodeTab:'sql'};
+  for(var i=1;i<=5;i++){
+    var d=document.getElementById('sd'+i);
+    if(d){d.classList.remove('done','active');d.classList.add('pending');d.textContent=String(i);}
+    var l=document.getElementById('sl'+i);
+    if(l)l.classList.remove('done');
+  }
+  var d1=document.getElementById('sd1');if(d1){d1.classList.remove('pending');d1.classList.add('active');}
+  for(var i=1;i<=5;i++){var p=document.getElementById('step'+i);if(p)p.classList.toggle('active',i===1);}
+  clearIntake();
+  var co=document.getElementById('codeOutput');if(co)co.textContent='';
+  var bc=document.getElementById('blueprintContent');if(bc)bc.innerHTML='';
+  var as=document.getElementById('artifactSummary');if(as)as.innerHTML='';
+  var al=document.getElementById('autoLog');if(al)al.innerHTML='';
+  var ap=document.getElementById('autoProvisionLog');if(ap)ap.style.display='none';
+  var ad=document.getElementById('autoProvisionDone');if(ad)ad.style.display='none';
+  updateHubCount();
+}
+
+
+async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabaseAnonKey){updateHubCount();return;}
+  const h={'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey};
+  const r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?select=*&order=hub_name.asc',{headers:h});
+  if(r.ok){const reg=await r.json();localStorage.setItem('roiHubRegistry',JSON.stringify(reg));window._allHubs=reg;updateHubCount();}}catch(e){console.warn('Registry:',e);updateHubCount();}}
+
+window._allHubs=[];
+
+async function loadHubGrid(){
+  var g=document.getElementById('hubGrid');
+  g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+  var hubs=[];
+  try{
+    if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+      var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?select=*&order=created_at.desc',
+        {headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey}});
+      if(r.ok){hubs=await r.json();localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));}
+      else throw new Error('HTTP '+r.status);
+    }else throw new Error('No Supabase config');
+  }catch(e){
+    console.warn('Supabase load failed, using localStorage:',e.message);
+    hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+  }
+  window._allHubs=hubs;
+  updateHubCount();
+  renderHubManager(hubs);
+}
+
+function renderHubManager(hubs){
   var active=hubs.filter(function(h){return (h.status||'live')==='live';});
   var archived=hubs.filter(function(h){return h.status==='archived';});
   var statsEl=document.getElementById('hmStats');
-  if(statsEl) statsEl.textContent=active.length+' active \\u2022 '+archived.length+' archived \\u2022 '+hubs.length+' total';
+  if(statsEl) statsEl.textContent=active.length+' active \u2022 '+archived.length+' archived \u2022 '+hubs.length+' total';
   var ag=document.getElementById('activeHubGrid');
   if(ag){
     if(active.length===0){ag.innerHTML='<div class="hm-empty">No active hubs. Click <b>+ Create New</b> to get started.</div>';}
@@ -208,50 +954,47 @@ function runPatch(){
   }
   updateHubCount();
 }
-
 function buildActiveCard(h){
   var hid=esc(h.hub_id||'');var hname=esc(h.hub_name||h.hub_id||'Untitled');
-  var dt=h.created_at?new Date(h.created_at).toLocaleDateString():'\\u2014';
+  var dt=h.created_at?new Date(h.created_at).toLocaleDateString():'\u2014';
   var c='<div class="hub-card">';
   c+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
   c+='<h3 style="margin:0;font-size:15px;font-weight:800;">'+hname+'</h3>';
   c+='<span class="hub-badge badge-active">Active</span></div>';
   c+='<div class="hc-meta">';
-  c+='<span>\\uD83D\\uDCE6 '+esc(h.product_code||'\\u2014')+'</span>';
-  c+='<span>\\uD83C\\uDFE2 '+esc(h.bu||'\\u2014')+'</span>';
-  c+='<span>\\uD83D\\uDC64 '+esc(h.owner||'\\u2014')+'</span>';
-  c+='<span>\\uD83D\\uDCC5 '+dt+'</span>';
-  if(h.db_table) c+='<span>\\uD83D\\uDDC4 <code style="color:var(--green);font-size:10px;">'+esc(h.db_table)+'</code></span>';
+  c+='<span>\uD83D\uDCE6 '+esc(h.product_code||'\u2014')+'</span>';
+  c+='<span>\uD83C\uDFE2 '+esc(h.bu||'\u2014')+'</span>';
+  c+='<span>\uD83D\uDC64 '+esc(h.owner||'\u2014')+'</span>';
+  c+='<span>\uD83D\uDCC5 '+dt+'</span>';
+  if(h.db_table) c+='<span>\uD83D\uDDC4 <code style="color:var(--green);font-size:10px;">'+esc(h.db_table)+'</code></span>';
   c+='</div><div class="hc-actions">';
-  if(h.hub_url) c+='<a class="btn-primary" href="'+esc(h.hub_url)+'" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px;">\\uD83D\\uDD17 Open</a>';
-  if(h.hub_url) c+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="copyHubUrl(\\''+esc(h.hub_url)+'\\')" >\\uD83D\\uDCCB Copy URL</button>';
-  c+='<button class="btn-archive" onclick="archiveHub(\\''+hid+'\\',\\''+hname.replace(/'/g,"\\\\'")+'\\')" >\\uD83D\\uDCC1 Archive</button>';
+  if(h.hub_url) c+='<a class="btn-primary" href="'+esc(h.hub_url)+'" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px;">\uD83D\uDD17 Open</a>';
+  if(h.hub_url) c+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="copyHubUrl(\x27'+esc(h.hub_url)+'\x27)">\uD83D\uDCCB Copy URL</button>';
+  c+='<button class="btn-archive" onclick="archiveHub(\x27'+hid+'\x27,\x27'+hname.replace(/\x27/g,"\\\x27")+'\x27)">\uD83D\uDCC1 Archive</button>';
   c+='</div></div>';
   return c;
 }
-
 function buildArchivedCard(h){
   var hid=esc(h.hub_id||'');var hname=esc(h.hub_name||h.hub_id||'Untitled');
-  var dt=h.created_at?new Date(h.created_at).toLocaleDateString():'\\u2014';
+  var dt=h.created_at?new Date(h.created_at).toLocaleDateString():'\u2014';
   var c='<div class="hub-card">';
   c+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
   c+='<h3 style="margin:0;font-size:15px;font-weight:800;">'+hname+'</h3>';
   c+='<span class="hub-badge badge-archived">Archived</span></div>';
   c+='<div class="hc-meta">';
-  c+='<span>\\uD83D\\uDCE6 '+esc(h.product_code||'\\u2014')+'</span>';
-  c+='<span>\\uD83C\\uDFE2 '+esc(h.bu||'\\u2014')+'</span>';
-  c+='<span>\\uD83D\\uDC64 '+esc(h.owner||'\\u2014')+'</span>';
-  c+='<span>\\uD83D\\uDCC5 '+dt+'</span>';
-  if(h.db_table) c+='<span>\\uD83D\\uDDC4 <code style="color:var(--green);font-size:10px;">'+esc(h.db_table)+'</code></span>';
+  c+='<span>\uD83D\uDCE6 '+esc(h.product_code||'\u2014')+'</span>';
+  c+='<span>\uD83C\uDFE2 '+esc(h.bu||'\u2014')+'</span>';
+  c+='<span>\uD83D\uDC64 '+esc(h.owner||'\u2014')+'</span>';
+  c+='<span>\uD83D\uDCC5 '+dt+'</span>';
+  if(h.db_table) c+='<span>\uD83D\uDDC4 <code style="color:var(--green);font-size:10px;">'+esc(h.db_table)+'</code></span>';
   c+='</div>';
-  c+='<div class="hub-offline">\\uD83D\\uDD12 Offline</div>';
+  c+='<div class="hub-offline">\uD83D\uDD12 Offline</div>';
   c+='<div class="hc-actions">';
-  c+='<button class="btn-resume" onclick="resumeHub(\\''+hid+'\\',\\''+hname.replace(/'/g,"\\\\'")+'\\')" >\\u25B6 Resume</button>';
-  c+='<button class="btn-delete-full" onclick="openDeleteModal(\\''+hid+'\\')" >\\u26A0 Delete</button>';
+  c+='<button class="btn-resume" onclick="resumeHub(\x27'+hid+'\x27,\x27'+hname.replace(/\x27/g,"\\\x27")+'\x27)">\u25B6 Resume</button>';
+  c+='<button class="btn-delete-full" onclick="openDeleteModal(\x27'+hid+'\x27)">\u26A0 Delete</button>';
   c+='</div></div>';
   return c;
 }
-
 function filterHubs(){
   var q=(document.getElementById('hubSearchInput').value||'').toLowerCase();
   if(!q){renderHubManager(window._allHubs||[]);return;}
@@ -260,156 +1003,110 @@ function filterHubs(){
   });
   renderHubManager(filtered);
 }
-
-function copyHubUrl(url){navigator.clipboard.writeText(url);toast('URL copied \\u2713','success');}
-
+function copyHubUrl(url){navigator.clipboard.writeText(url);toast('URL copied \u2713','success');}
 async function archiveHub(hubId,hubName){
   try{
     if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
       var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
         {method:'PATCH',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Content-Type':'application/json','Prefer':'return=minimal'},
          body:JSON.stringify({status:'archived',updated_at:new Date().toISOString()})});
-      if(!r.ok)throw new Error('Supabase PATCH HTTP '+r.status);
+      if(!r.ok)throw new Error('HTTP '+r.status);
     }
     var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
     var idx=local.findIndex(function(h){return h.hub_id===hubId;});
     if(idx>=0){local[idx].status='archived';localStorage.setItem('roiHubRegistry',JSON.stringify(local));}
-    toast('"'+hubName+'" archived \\u2713','success');
-    loadHubGrid();
+    toast('"'+hubName+'" archived \u2713','success');loadHubGrid();
   }catch(e){console.error('[HubMgr] Archive error:',e);toast('Archive failed: '+e.message,'error');}
 }
-
 async function resumeHub(hubId,hubName){
   try{
     if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
       var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
         {method:'PATCH',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Content-Type':'application/json','Prefer':'return=minimal'},
          body:JSON.stringify({status:'live',updated_at:new Date().toISOString()})});
-      if(!r.ok)throw new Error('Supabase PATCH HTTP '+r.status);
+      if(!r.ok)throw new Error('HTTP '+r.status);
     }
     var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
     var idx=local.findIndex(function(h){return h.hub_id===hubId;});
     if(idx>=0){local[idx].status='live';localStorage.setItem('roiHubRegistry',JSON.stringify(local));}
-    toast('"'+hubName+'" resumed \\u2713','success');
-    loadHubGrid();
+    toast('"'+hubName+'" resumed \u2713','success');loadHubGrid();
   }catch(e){console.error('[HubMgr] Resume error:',e);toast('Resume failed: '+e.message,'error');}
 }
-
 var _pendingDeleteHubId=null;
-
 function openDeleteModal(hubId){
   _pendingDeleteHubId=hubId;
   var hub=(window._allHubs||[]).find(function(h){return h.hub_id===hubId;});
   if(!hub){toast('Hub not found','error');return;}
   var body=document.getElementById('delModalBody');
-  body.innerHTML='This will <strong>permanently delete</strong> all data for <strong>'+esc(hub.hub_name||hubId)+'</strong>:<br><br>'+
-    '\\u2022 Supabase table: <code>'+(hub.db_table||'N/A')+'</code> (all rows deleted)<br>'+
-    '\\u2022 GitHub repo: <code>'+(hub.hub_id||'')+'-roi-hub</code> (repository deleted)<br>'+
-    '\\u2022 Registry entry removed from Supabase<br><br>'+
-    '<span style="color:var(--red);">\\u26A0 This action cannot be undone.</span>';
+  body.innerHTML='This will <strong>permanently delete</strong> all data for <strong>'+esc(hub.hub_name||hubId)+'</strong>:<br><br>'
+    +'\u2022 Supabase table: <code>'+(hub.db_table||'N/A')+'</code> (all rows deleted)<br>'
+    +'\u2022 GitHub repo: <code>'+(hub.hub_id||'')+'-roi-hub</code> (repository deleted)<br>'
+    +'\u2022 Registry entry removed from Supabase<br><br>'
+    +'<span style="color:var(--red);">\u26A0 This action cannot be undone.</span>';
   document.getElementById('delModal').classList.add('show');
 }
-
 function closeDeleteModal(){
   document.getElementById('delModal').classList.remove('show');
   _pendingDeleteHubId=null;
   var btn=document.getElementById('delConfirmBtn');
   btn.classList.remove('btn-disabled');
-  btn.innerHTML='\\uD83D\\uDDD1\\uFE0F Delete Forever';
+  btn.innerHTML='\uD83D\uDDD1\uFE0F Delete Forever';
 }
-
 async function confirmDeleteHub(){
   if(!_pendingDeleteHubId)return;
   var hub=(window._allHubs||[]).find(function(h){return h.hub_id===_pendingDeleteHubId;});
   if(!hub){closeDeleteModal();return;}
   var btn=document.getElementById('delConfirmBtn');
-  btn.classList.add('btn-disabled');btn.textContent='\\u23F3 Deleting\\u2026';
+  btn.classList.add('btn-disabled');btn.textContent='\u23F3 Deleting\u2026';
   var hubId=hub.hub_id;var hubName=hub.hub_name||hubId;
   console.log('[HubMgr] === Starting full delete for "'+hubName+'" ===');
-
-  /* Step 1: Delete all rows from Supabase data table */
+  /* Step 1: Delete Supabase table rows */
   if(hub.db_table&&CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
     try{
-      console.log('[HubMgr] Step 1: Deleting Supabase table rows from',hub.db_table);
+      console.log('[HubMgr] Step 1: Deleting rows from',hub.db_table);
       var r1=await fetch(CONFIG.supabaseUrl+'/rest/v1/'+hub.db_table+'?id=neq.',
         {method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});
-      console.log('[HubMgr] Step 1 result:',r1.status,(r1.ok||r1.status===204)?'\\u2705 OK':'\\u274C FAIL');
+      console.log('[HubMgr] Step 1:',r1.status,(r1.ok||r1.status===204)?'\u2705 OK':'\u274C FAIL');
     }catch(e){console.error('[HubMgr] Step 1 error:',e);}
-  } else {console.warn('[HubMgr] Step 1 skipped (no db_table or config)');}
-
-  /* Step 2: Delete GitHub repository */
+  } else {console.warn('[HubMgr] Step 1 skipped');}
+  /* Step 2: Delete GitHub repo */
   var repoName=hubId+'-roi-hub';
   if(CONFIG.githubToken&&CONFIG.githubUser){
     try{
-      console.log('[HubMgr] Step 2: Deleting GitHub repo',CONFIG.githubUser+'/'+repoName);
+      console.log('[HubMgr] Step 2: Deleting repo',CONFIG.githubUser+'/'+repoName);
       var r2=await fetch('https://api.github.com/repos/'+CONFIG.githubUser+'/'+repoName,
         {method:'DELETE',headers:{'Authorization':'Bearer '+CONFIG.githubToken,'Accept':'application/vnd.github+json'}});
-      if(r2.ok||r2.status===204){console.log('[HubMgr] Step 2 \\u2705 Repo deleted');}
-      else if(r2.status===404){console.log('[HubMgr] Step 2 \\u2705 Repo not found (already deleted)');}
-      else{console.error('[HubMgr] Step 2 \\u274C HTTP',r2.status,await r2.text());}
+      if(r2.ok||r2.status===204)console.log('[HubMgr] Step 2 \u2705 Repo deleted');
+      else if(r2.status===404)console.log('[HubMgr] Step 2 \u2705 Repo not found (already gone)');
+      else console.error('[HubMgr] Step 2 \u274C HTTP',r2.status);
     }catch(e){console.error('[HubMgr] Step 2 error:',e);}
-  } else {console.warn('[HubMgr] Step 2 skipped (no GitHub token/user)');}
-
-  /* Step 3: Delete registry entry from Supabase */
+  } else {console.warn('[HubMgr] Step 2 skipped (no GitHub token)');}
+  /* Step 3: Delete registry entry */
   if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
     try{
       console.log('[HubMgr] Step 3: Deleting registry entry for',hubId);
       var r3=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
         {method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});
-      console.log('[HubMgr] Step 3 result:',r3.status,(r3.ok||r3.status===204)?'\\u2705 OK':'\\u274C FAIL');
+      console.log('[HubMgr] Step 3:',r3.status,(r3.ok||r3.status===204)?'\u2705 OK':'\u274C FAIL');
     }catch(e){console.error('[HubMgr] Step 3 error:',e);}
   }
-
-  /* Step 4: Clean up localStorage */
+  /* Step 4: localStorage cleanup */
   var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
   local=local.filter(function(h){return h.hub_id!==hubId;});
   localStorage.setItem('roiHubRegistry',JSON.stringify(local));
-  console.log('[HubMgr] Step 4 \\u2705 localStorage cleaned');
-
+  console.log('[HubMgr] Step 4 \u2705 localStorage cleaned');
   closeDeleteModal();
-  toast('"'+hubName+'" fully deleted from Supabase + GitHub \\u2713','success');
+  toast('"'+hubName+'" fully deleted from Supabase + GitHub \u2713','success');
   console.log('[HubMgr] === Delete complete for "'+hubName+'" ===');
   loadHubGrid();
 }
-
 function updateHubCount(){
   var el=document.getElementById('hubCount');if(!el)return;
   var hubs=window._allHubs||JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
   var liveCount=hubs.filter(function(h){return (h.status||'live')==='live';}).length;
   el.textContent=String(liveCount);
 }
-
-`;
-    s = s.substring(0, fnStart) + newFunctions + s.substring(fnEnd);
-    patches++;
-    log('PATCH 4 ✅ Hub Manager JS functions replaced (renderHubManager, buildActiveCard, buildArchivedCard, archiveHub, resumeHub, openDeleteModal, closeDeleteModal, confirmDeleteHub, filterHubs, copyHubUrl, updateHubCount)','ok');
-  } else {
-    log('PATCH 4 ❌ Could not find renderHubCards/renderHubManager function block (start:'+fnStart+' end:'+fnEnd+')','err');
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // PATCH 5: Fix Hubs button spacing — remove spaces around count
-  // ═══════════════════════════════════════════════════════
-  // Find "Hubs( " or "Hubs (" patterns and normalize
-  s = s.replace(/Hubs\s*\(\s*/g, 'Hubs(');
-  s = s.replace(/\s*\)\s*(<\/span>)/g, ')$1');
-  patches++;
-  log('PATCH 5 ✅ Fixed Hubs(N) button spacing','ok');
-
-  // ═══════════════════════════════════════════════════════
-  // DONE — Download
-  // ═══════════════════════════════════════════════════════
-  log('\\n══════════════════════════════════════','ok');
-  log('✅ All '+patches+' patches applied successfully!','ok');
-  log('Downloading ROI_Agent_Studio_v8.html...','ok');
-  
-  var blob=new Blob([s],{type:'text/html'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='ROI_Agent_Studio_v8.html';
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
+document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){loadStudioRegistry();},300);});
 </script>
 </body>
 </html>
