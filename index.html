@@ -918,8 +918,8 @@ async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabase
 window._allHubs=[];
 
 async function loadHubGrid(){
-  var g=document.getElementById('hubGrid');
-  g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+  var ag=document.getElementById('activeHubGrid');
+  if(ag) ag.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading\u2026</div>';
   var hubs=[];
   try{
     if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
