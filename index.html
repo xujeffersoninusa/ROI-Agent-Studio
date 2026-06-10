@@ -147,6 +147,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
   <div class="nav-tabs" id="studioNavTabs">
     <span onclick="hideHubManager()" class="nav-tab active">&#x1F4CA; ROI Studio</span>
     <span onclick="showHubManager()" class="nav-tab">&#x1F5C2; My ROI Hubs</span>
+    <a href="https://xujeffersoninusa.github.io/ROI-Hub-MKT-Portfolio/?access=jeffersonxuinteradyne" target="_blank" class="nav-tab" style="text-decoration:none;color:inherit;">&#x1F4CA; Portfolio &#x2197;</a>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
     <span style="font-size:11px;color:var(--muted);">Logged in as Jefferson Xu</span>
@@ -236,7 +237,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
   </div>
   <div class="step-panel" id="step3">
     <div class="form-card"><h2>&#x1F4DD; Generated Code</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">SQL + HTML ready for deployment.</p>
-      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
+      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px;"><input type="checkbox" id="chkRegisterPortfolio" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/><label for="chkRegisterPortfolio" style="font-size:12px;cursor:pointer;color:var(--ink);">Register to Portfolio Dashboard</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
       <div><div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div><div class="code-block" id="codeOutput"></div></div></div>
       <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">⚡ Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next →</button></div></div>
       <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Next: Deploy →</button></div>
@@ -767,6 +768,22 @@ async function autoProvision(bp,sql,html){
   log('═══════════════════════════════════════','info');log('🎉 Done!','success');
   log('🔗 <a href="'+hubUrl+'" target="_blank" style="color:var(--accent);">'+hubUrl+'</a>','success');
   log('🔑 Token: <strong style="color:var(--amber);">'+bp.access_token+'</strong>','info');
+  // Register to Portfolio
+  var regChk=document.getElementById('chkRegisterPortfolio');
+  if(regChk&&regChk.checked){
+    log('📊 Registering to Portfolio…');
+    try{
+      var hubRec={hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code||'',bu:bp.bu||'Semiconductor',phase:bp.phase||'Development',owner:bp.owner||'Jefferson Xu',hub_url:hubUrl,status:'live',roi_status:'pending',npv:null,irr:null,dev_cost:bp.dev_cost||null,created_at:new Date().toISOString()};
+      if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+        try{var rr=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry',{method:'POST',headers:{'Content-Type':'application/json','apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=representation'},body:JSON.stringify(hubRec)});
+        if(rr.ok)log('✅ Portfolio registered (Supabase)','success');
+        else log('⚠️ Supabase registry not available — saved locally','warn');}catch(e2){log('⚠️ Supabase error — saved locally','warn');}
+      }
+      var lh=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');lh.push(hubRec);localStorage.setItem('roiHubRegistry',JSON.stringify(lh));
+      log('✅ Portfolio registered','success');
+    }catch(e3){log('⚠️ Portfolio registration: '+e3.message,'warn');}
+  }else{log('ℹ️ Portfolio registration skipped','info');}
+
   document.getElementById('autoProvisionDone').style.display='flex';document.getElementById('hubLiveUrl').href=hubUrl;document.getElementById('hubLiveUrl').textContent=hubUrl;
   loadStudioRegistry();
 }
