@@ -835,16 +835,36 @@ function finishWizard(){const bp=pipeline.blueprint;if(!bp){toast('No blueprint'
   hubs.push({hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code,bu:bp.bu,phase:bp.phase,owner:bp.owner,
     db_table:bp.db_table,access_token:bp.access_token,hub_url:'https://'+CONFIG.githubUser+'.github.io/'+bp.hub_id+'-roi-hub/?access='+encodeURIComponent(bp.access_token),
     status:'live',created_at:new Date().toISOString()});
-  localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));markStepDone(4);markStepDone(5);toast('🎉 Hub registered!','success');}
+  localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));markStepDone(4);markStepDone(5);toast('🎉 Hub registered!','success');setTimeout(function(){resetWizard();},1500);}
 
 function showHubManager(){document.getElementById('studioShell').style.display='none';document.getElementById('hubManagerShell').style.display='block';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===1));loadHubGrid();}
-function hideHubManager(){document.getElementById('studioShell').style.display='block';document.getElementById('hubManagerShell').style.display='none';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));}
+function hideHubManager(){document.getElementById('studioShell').style.display='block';document.getElementById('hubManagerShell').style.display='none';document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',i===0));resetWizard();}
 
-async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabaseAnonKey)return;
+function resetWizard(){
+  pipeline={step:1,blueprint:null,generatedSQL:'',generatedHTML:'',currentCodeTab:'sql'};
+  for(var i=1;i<=5;i++){
+    var d=document.getElementById('sd'+i);
+    if(d){d.classList.remove('done','active');d.classList.add('pending');d.textContent=String(i);}
+    var l=document.getElementById('sl'+i);
+    if(l)l.classList.remove('done');
+  }
+  var d1=document.getElementById('sd1');if(d1){d1.classList.remove('pending');d1.classList.add('active');}
+  for(var i=1;i<=5;i++){var p=document.getElementById('step'+i);if(p)p.classList.toggle('active',i===1);}
+  clearIntake();
+  var co=document.getElementById('codeOutput');if(co)co.textContent='';
+  var bc=document.getElementById('blueprintContent');if(bc)bc.innerHTML='';
+  var as=document.getElementById('artifactSummary');if(as)as.innerHTML='';
+  var al=document.getElementById('autoLog');if(al)al.innerHTML='';
+  var ap=document.getElementById('autoProvisionLog');if(ap)ap.style.display='none';
+  var ad=document.getElementById('autoProvisionDone');if(ad)ad.style.display='none';
+  updateHubCount();
+}
+
+
+async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabaseAnonKey){updateHubCount();return;}
   const h={'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey};
   const r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?select=*&order=hub_name.asc',{headers:h});
-  if(r.ok){const reg=await r.json();const local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
-  reg.forEach(h=>{if(!local.find(l=>l.hub_id===h.hub_id))local.push(h);});localStorage.setItem('roiHubRegistry',JSON.stringify(local));}}catch(e){console.warn('Registry:',e);}}
+  if(r.ok){const reg=await r.json();localStorage.setItem('roiHubRegistry',JSON.stringify(reg));window._allHubs=reg;updateHubCount();}}catch(e){console.warn('Registry:',e);updateHubCount();}}
 
 window._allHubs=[];
 
@@ -852,15 +872,12 @@ async function loadHubGrid(){
   var g=document.getElementById('hubGrid');
   g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
   var hubs=[];
-  // Try Supabase first
   try{
     if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
       var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?select=*&order=created_at.desc',
         {headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey}});
-      if(r.ok){hubs=await r.json();
-        // Sync to localStorage
-        localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));
-      }else throw new Error('HTTP '+r.status);
+      if(r.ok){hubs=await r.json();localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));}
+      else throw new Error('HTTP '+r.status);
     }else throw new Error('No Supabase config');
   }catch(e){
     console.warn('Supabase load failed, using localStorage:',e.message);
@@ -923,7 +940,6 @@ async function archiveHub(hubId,hubName){
          body:JSON.stringify({status:'archived',updated_at:new Date().toISOString()})});
       if(!r.ok)throw new Error('HTTP '+r.status);
     }
-    // Also update localStorage
     var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
     var idx=local.findIndex(function(h){return h.hub_id===hubId;});
     if(idx>=0){local[idx].status='archived';localStorage.setItem('roiHubRegistry',JSON.stringify(local));}
@@ -968,7 +984,7 @@ function updateHubCount(){
   el.textContent=String(liveCount);
 }
 
-document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){loadStudioRegistry();updateHubCount();},300);});
+document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){loadStudioRegistry();},300);});
 </script>
 </body>
 </html>
