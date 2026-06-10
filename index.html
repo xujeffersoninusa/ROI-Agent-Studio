@@ -570,6 +570,7 @@ var CAN={low:{revenue:Z()},mid:{revenue:Z()},high:{revenue:Z()}};
 var devC=JSON.parse(JSON.stringify(DD)),revD=JSON.parse(JSON.stringify(DR)),canD=JSON.parse(JSON.stringify(CAN));
 var activeRS="low",activePS="mid",activeDashScen="mid",aiHist=[],aiOn=false;
 var fmt=function(n){return n==null?"—":n.toLocaleString("en-US",{maximumFractionDigits:0})};
+var fD=function(n){return n==null?"—":"$"+fmt(n)};
 var fK=function(n){return n==null?"—":"$"+fmt(n)+"K"};
 var fM=function(n){return n==null?"—":"$"+(n/1000).toFixed(1)+"M"};
 var fP=function(n){return n==null?"—":(n*100).toFixed(1)+"%"};
