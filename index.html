@@ -146,7 +146,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
   </div>
   <div class="nav-tabs" id="studioNavTabs">
     <span onclick="hideHubManager()" class="nav-tab active">&#x1F4CA; ROI Studio</span>
-    <span onclick="showHubManager()" class="nav-tab">&#x1F5C2; My ROI Hubs</span>
+    <span onclick="showHubManager()" class="nav-tab" id="hubNavTab">&#x1F5C2; Hubs(<span id="hubCount">&hellip;</span>)</span>
     <a href="https://xujeffersoninusa.github.io/ROI-Hub-MKT-Portfolio/?access=jeffersonxuinteradyne" target="_blank" class="nav-tab" style="text-decoration:none;color:inherit;">&#x1F4CA; Portfolio &#x2197;</a>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
@@ -236,20 +236,44 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
     <div class="form-card"><h2>&#x1F4D0; Blueprint Review</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">Review the generated blueprint then approve.</p><div id="blueprintContent"></div><div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(1)">&#x2190; Back</button><button class="btn-primary" onclick="approveBlueprint()">&#x2705; Approve &amp; Generate Code</button></div></div>
   </div>
   <div class="step-panel" id="step3">
-    <div class="form-card"><h2>&#x1F4DD; Generated Code</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">SQL + HTML ready for deployment.</p>
-      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px"><input type="checkbox" id="chkRP" checked style="width:16px;height:16px"/><label for="chkRP" style="font-size:12px;cursor:pointer">Register to Portfolio</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
-      <div><div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div><div class="code-block" id="codeOutput"></div></div></div>
-      <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">⚡ Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next →</button></div></div>
-      <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Next: Deploy →</button></div>
+    <div class="form-card"><h2>&#x2463; Provisioning Agent — Generated Artifacts</h2>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:24px;margin-top:16px;">
+        <!-- LEFT: Artifact Summary -->
+        <div style="background:var(--surface2);border:1px solid var(--line);border-radius:var(--radius);padding:20px;">
+          <h3 style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;">Generated Artifacts</h3>
+          <div id="artifactSummary" style="font-size:13px;"></div>
+          <div style="margin-top:20px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px"><input type="checkbox" id="chkRP" checked style="width:16px;height:16px"/><label for="chkRP" style="font-size:12px;cursor:pointer">Register to Portfolio</label></div>
+            <button class="auto-btn" onclick="startAutoProvision()" style="width:100%;">&#x26A1; Auto-Deploy Everything</button>
+            <p style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center;">Runs SQL &#x2192; Creates GitHub repo &#x2192; Uploads HTML &#x2192; Enables Pages — fully automatic</p>
+          </div>
+          <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:16px;">
+            <p style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px;text-transform:uppercase;">Or Download Manually</p>
+            <button class="btn-ghost" style="width:100%;margin-bottom:8px;" onclick="downloadFile('sql')">&#x2B07; Download SQL</button>
+            <button class="btn-ghost" style="width:100%;" onclick="downloadFile('html')">&#x2B07; Download HTML</button>
+          </div>
+        </div>
+        <!-- RIGHT: Code Preview -->
+        <div>
+          <div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div>
+          <div class="code-block" id="codeOutput" style="max-height:520px;overflow:auto;"></div>
+        </div>
+      </div>
+      <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">&#x26A1; Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next &#x2192;</button></div></div>
+      <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Validate &#x2192;</button></div>
     </div>
   </div>
   <div class="step-panel" id="step4"><div class="form-card"><h2>&#x1F680; Deploy Checklist</h2><div id="deployContent"></div><div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(3)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(5)">Next: Validate →</button></div></div></div>
   <div class="step-panel" id="step5"><div class="form-card"><h2>&#x2705; Validation Checklist</h2><div id="validationContent"></div><div style="margin-top:20px;"><button class="btn-primary" onclick="finishWizard()">&#x1F389; Finish &amp; Register Hub</button></div></div></div>
 </div>
 <div class="shell" id="hubManagerShell" style="display:none;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
     <h2 style="margin:0;font-size:20px;">&#x1F5C2; My ROI Hubs</h2>
-    <div style="display:flex;gap:8px;"><button class="btn-ghost" onclick="loadHubGrid()">&#x1F504; Refresh</button><button class="btn-primary" onclick="hideHubManager()">+ Create New</button></div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <input id="hubSearchInput" type="text" placeholder="&#x1F50D; Filter hubs…" oninput="filterHubs()" style="padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12px;width:200px;"/>
+      <button class="btn-ghost" onclick="loadHubGrid()">&#x1F504; Refresh</button>
+      <button class="btn-primary" onclick="hideHubManager()">+ Create New</button>
+    </div>
   </div>
   <div class="hub-grid" id="hubGrid"></div>
 </div>
@@ -686,8 +710,22 @@ function approveBlueprint(){
   if(!pipeline.blueprint){toast('Generate a blueprint first','error');return;}
   const bp=pipeline.blueprint;pipeline.generatedSQL=generateSQL(bp);pipeline.generatedHTML=generateHTML(bp);
   pipeline.currentCodeTab='sql';document.getElementById('codeOutput').textContent=pipeline.generatedSQL;
-  renderDeploy(bp);renderValidation(bp);markStepDone(2);goStep(3);toast('Code generated ✓','success');
+  renderDeploy(bp);renderValidation(bp);renderArtifactSummary(bp);markStepDone(2);goStep(3);toast('Code generated ✓','success');
 }
+
+function renderArtifactSummary(bp){
+  var sql=pipeline.generatedSQL||'';var html=pipeline.generatedHTML||'';
+  var el=document.getElementById('artifactSummary');if(!el)return;
+  var row=function(label,value,color){return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);"><span style="color:var(--muted)">'+label+'</span><span style="font-weight:700;'+(color?'color:'+color:'')+';font-size:13px;">'+value+'</span></div>';};
+  el.innerHTML=
+    row('Hub',esc(bp.hub_short||bp.hub_id))+
+    row('DB table',esc(bp.db_table),'var(--green)')+
+    row('Access token','<span style="font-family:monospace;font-size:11px;">'+esc(bp.access_token)+'</span>','var(--amber)')+
+    row('GitHub repo',esc(bp.hub_id)+'-roi-hub')+
+    row('SQL lines',String(sql.split('\n').length))+
+    row('HTML lines',String(html.split('\n').length));
+}
+
 
 function generateSQL(bp){
   const params=JSON.stringify({wacc:bp.wacc,burden:bp.burden,cannibal_dt:bp.cannibal_dt,pct_svc:bp.pct_svc,pct_war:bp.pct_war,pct_inv:bp.pct_inv,pct_net:bp.pct_net,pct_ocos:bp.pct_ocos,pct_sales:bp.pct_sales,pct_mktg:bp.pct_mktg,pct_ga:bp.pct_ga});
@@ -703,7 +741,7 @@ CREATE TABLE IF NOT EXISTS ${bp.db_table} (
   is_active BOOLEAN DEFAULT true, created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
 CREATE INDEX IF NOT EXISTS idx_${bp.db_table}_pid ON ${bp.db_table}(product_id);
 ALTER TABLE ${bp.db_table} ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anon_${bp.db_table}" ON ${bp.db_table} FOR ALL USING (true) WITH CHECK (true);
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='anon_' || '${bp.db_table}' AND tablename='${bp.db_table}') THEN CREATE POLICY "anon_${bp.db_table}" ON ${bp.db_table} FOR ALL USING (true) WITH CHECK (true); END IF; END $$;
 
 CREATE TABLE IF NOT EXISTS roi_hub_registry (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY, hub_id TEXT UNIQUE NOT NULL, hub_name TEXT NOT NULL,
@@ -711,7 +749,7 @@ CREATE TABLE IF NOT EXISTS roi_hub_registry (
   access_token TEXT, status TEXT DEFAULT 'live', hub_type TEXT DEFAULT 'roi',
   metadata JSONB DEFAULT '{}', created_at TIMESTAMPTZ DEFAULT now(), updated_at TIMESTAMPTZ DEFAULT now());
 ALTER TABLE roi_hub_registry ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "anon_roi_hub_registry" ON roi_hub_registry FOR ALL USING (true) WITH CHECK (true);
+DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname='anon_roi_hub_registry' AND tablename='roi_hub_registry') THEN CREATE POLICY "anon_roi_hub_registry" ON roi_hub_registry FOR ALL USING (true) WITH CHECK (true); END IF; END $$;
 
 INSERT INTO roi_hub_registry (hub_id,hub_name,hub_short,product_code,bu,phase,owner,db_table,access_token,hub_url,metadata)
 VALUES ('${bp.hub_id}','${bp.hub_name.replace(/'/g,"''")}','${bp.hub_short.replace(/'/g,"''")}','${bp.product_code}','${bp.bu}','${bp.phase}','${bp.owner.replace(/'/g,"''")}','${bp.db_table}','${bp.access_token}',
@@ -808,20 +846,129 @@ async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabase
   if(r.ok){const reg=await r.json();const local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
   reg.forEach(h=>{if(!local.find(l=>l.hub_id===h.hub_id))local.push(h);});localStorage.setItem('roiHubRegistry',JSON.stringify(local));}}catch(e){console.warn('Registry:',e);}}
 
-function loadHubGrid(){var hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');var g=document.getElementById('hubGrid');
-  if(!hubs.length){g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No hubs yet.</div>';return;}
-  window._hl=hubs;var o='<div style="display:flex;gap:12px;align-items:center;margin-bottom:20px"><label style="font-weight:700">Select Hub:</label><select id="hSel" onchange="onHS()" style="padding:10px;min-width:260px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">Choose...</option>';
-  hubs.forEach(function(h,i){o+='<option value="'+i+'">'+esc(h.hub_name||h.hub_id)+'</option>';});
-  o+='</select></div><div id="hDet"></div>';g.innerHTML=o;}
-function onHS(){var s=document.getElementById('hSel'),d=document.getElementById('hDet');if(!s.value){d.innerHTML='';return;}
-  var h=window._hl[+s.value];if(!h)return;var st=h.status||'live';
-  d.innerHTML='<div class="hub-card" style="max-width:520px"><h3>'+esc(h.hub_name||h.hub_id)+'</h3><span class="hub-status '+st+'">'+st.toUpperCase()+'</span><div class="hc-meta"><span>'+esc(h.product_code||'')+'</span><span>'+esc(h.bu||'')+'</span><span>'+esc(h.owner||'')+'</span><span>'+(h.created_at?new Date(h.created_at).toLocaleDateString():'')+'</span></div><div class="hc-actions">'+(h.hub_url?'<a class="btn-primary" href="'+esc(h.hub_url)+'" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px">Open</a>':'')+'<button class="btn-ghost" style="font-size:11px;padding:6px 12px" onclick="archiveHub('+s.value+')">Archive</button><button class="btn-danger" style="font-size:11px;padding:6px 12px" onclick="deleteHub('+s.value+')">Delete</button></div></div>';}
+window._allHubs=[];
 
-function archiveHub(i){const h=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');if(h[i]){h[i].status='archived';localStorage.setItem('roiHubRegistry',JSON.stringify(h));loadHubGrid();toast('Archived','success');}}
-function resumeHub(i){const h=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');if(h[i]){h[i].status='live';localStorage.setItem('roiHubRegistry',JSON.stringify(h));loadHubGrid();toast('Resumed','success');}}
-function deleteHub(i){if(!confirm('Delete this hub from registry?'))return;const h=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');h.splice(i,1);localStorage.setItem('roiHubRegistry',JSON.stringify(h));loadHubGrid();toast('Deleted','success');}
+async function loadHubGrid(){
+  var g=document.getElementById('hubGrid');
+  g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">Loading…</div>';
+  var hubs=[];
+  // Try Supabase first
+  try{
+    if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+      var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?select=*&order=created_at.desc',
+        {headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey}});
+      if(r.ok){hubs=await r.json();
+        // Sync to localStorage
+        localStorage.setItem('roiHubRegistry',JSON.stringify(hubs));
+      }else throw new Error('HTTP '+r.status);
+    }else throw new Error('No Supabase config');
+  }catch(e){
+    console.warn('Supabase load failed, using localStorage:',e.message);
+    hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+  }
+  window._allHubs=hubs;
+  updateHubCount();
+  renderHubCards(hubs);
+}
 
-document.addEventListener('DOMContentLoaded',function(){setTimeout(loadStudioRegistry,300);});
+function renderHubCards(hubs){
+  var g=document.getElementById('hubGrid');
+  if(!hubs.length){g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No hubs yet. Click <b>+ Create New</b> to get started.</div>';return;}
+  var cards='';
+  hubs.forEach(function(h,i){
+    var st=h.status||'live';
+    var dt=h.created_at?new Date(h.created_at).toLocaleDateString():'—';
+    var hid=h.hub_id||('hub-'+i);
+    var hname=esc(h.hub_name||h.hub_id||'Untitled');
+    cards+='<div class="hub-card" data-hub-name="'+(h.hub_name||'').toLowerCase()+'" data-hub-id="'+(h.hub_id||'').toLowerCase()+'">';
+    cards+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+    cards+='<h3 style="margin:0;font-size:15px;font-weight:800;">'+hname+'</h3>';
+    cards+='<span class="hub-status '+st+'">'+st.toUpperCase()+'</span>';
+    cards+='</div>';
+    cards+='<div class="hc-meta">';
+    cards+='<span>&#x1F4E6; '+esc(h.product_code||'—')+'</span>';
+    cards+='<span>&#x1F3E2; '+esc(h.bu||'—')+'</span>';
+    cards+='<span>&#x1F464; '+esc(h.owner||'—')+'</span>';
+    cards+='<span>&#x1F4C5; '+dt+'</span>';
+    if(h.db_table) cards+='<span>&#x1F5C4; <code style="color:var(--green);font-size:10px;">'+esc(h.db_table)+'</code></span>';
+    cards+='</div>';
+    cards+='<div class="hc-actions">';
+    if(h.hub_url) cards+='<a class="btn-primary" href="'+esc(h.hub_url)+'" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px;">&#x1F517; Open</a>';
+    if(h.hub_url) cards+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="copyHubUrl(\''+esc(h.hub_url).replace(/'/g,"\\'")+'\')">&#x1F4CB; Copy URL</button>';
+    if(st==='live') cards+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;color:var(--amber);" onclick="archiveHub(\''+esc(hid)+'\',\''+hname.replace(/'/g,"\\'")+'\')">&#x1F4E6; Archive</button>';
+    else cards+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;color:var(--green);" onclick="resumeHub(\''+esc(hid)+'\',\''+hname.replace(/'/g,"\\'")+'\')">&#x267B; Restore</button>';
+    cards+='<button class="btn-ghost" style="font-size:11px;padding:6px 12px;color:var(--red);" onclick="deleteHub(\''+esc(hid)+'\',\''+hname.replace(/'/g,"\\'")+'\')">&#x1F5D1; Delete</button>';
+    cards+='</div></div>';
+  });
+  g.innerHTML=cards;
+}
+
+function filterHubs(){
+  var q=(document.getElementById('hubSearchInput').value||'').toLowerCase();
+  if(!q){renderHubCards(window._allHubs);return;}
+  var filtered=window._allHubs.filter(function(h){
+    return (h.hub_name||'').toLowerCase().indexOf(q)>=0||(h.hub_id||'').toLowerCase().indexOf(q)>=0||(h.product_code||'').toLowerCase().indexOf(q)>=0||(h.bu||'').toLowerCase().indexOf(q)>=0||(h.owner||'').toLowerCase().indexOf(q)>=0;
+  });
+  renderHubCards(filtered);
+}
+
+function copyHubUrl(url){navigator.clipboard.writeText(url);toast('URL copied ✓','success');}
+
+async function archiveHub(hubId,hubName){
+  if(!confirm('Archive "'+hubName+'"?'))return;
+  try{
+    if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+      var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
+        {method:'PATCH',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+         body:JSON.stringify({status:'archived',updated_at:new Date().toISOString()})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+    }
+    // Also update localStorage
+    var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+    var idx=local.findIndex(function(h){return h.hub_id===hubId;});
+    if(idx>=0){local[idx].status='archived';localStorage.setItem('roiHubRegistry',JSON.stringify(local));}
+    toast('Archived ✓','success');loadHubGrid();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function resumeHub(hubId,hubName){
+  try{
+    if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+      var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
+        {method:'PATCH',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Content-Type':'application/json','Prefer':'return=minimal'},
+         body:JSON.stringify({status:'live',updated_at:new Date().toISOString()})});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+    }
+    var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+    var idx=local.findIndex(function(h){return h.hub_id===hubId;});
+    if(idx>=0){local[idx].status='live';localStorage.setItem('roiHubRegistry',JSON.stringify(local));}
+    toast('Restored ✓','success');loadHubGrid();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+async function deleteHub(hubId,hubName){
+  if(!confirm('Delete "'+hubName+'" permanently? This cannot be undone.'))return;
+  try{
+    if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
+      var r=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry?hub_id=eq.'+encodeURIComponent(hubId),
+        {method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+    }
+    var local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+    local=local.filter(function(h){return h.hub_id!==hubId;});
+    localStorage.setItem('roiHubRegistry',JSON.stringify(local));
+    toast('Deleted ✓','success');loadHubGrid();
+  }catch(e){toast('Error: '+e.message,'error');}
+}
+
+function updateHubCount(){
+  var el=document.getElementById('hubCount');if(!el)return;
+  var hubs=window._allHubs||JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+  var liveCount=hubs.filter(function(h){return (h.status||'live')==='live';}).length;
+  el.textContent=String(liveCount);
+}
+
+document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){loadStudioRegistry();updateHubCount();},300);});
 </script>
 </body>
 </html>
