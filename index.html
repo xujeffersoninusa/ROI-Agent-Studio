@@ -506,15 +506,15 @@ body.ai-open .ai-drawer{right:0}
 <button class="btn btn-secondary btn-sm" onclick="deleteSnapshot('rev')">🗑️ Delete</button>
 </div>
 <div class="ss" id="rev-sub-tabs">
-<button class="active" onclick="switchRevScen('low',this)">📉 Low</button>
-<button onclick="switchRevScen('mid',this)">📊 Most Likely</button>
+<button onclick="switchRevScen('low',this)">📉 Low</button>
+<button class="active" onclick="switchRevScen('mid',this)">📊 Most Likely</button>
 <button onclick="switchRevScen('high',this)">📈 High</button>
 </div>
-<div id="rev-sub-low" class="sub-panel active">
+<div id="rev-sub-low" class="sub-panel">
 <div class="panel"><h2>📉 Low — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-low"></table></div></div>
 <div class="panel"><h2>📉 Low — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-low"></table></div></div>
 </div>
-<div id="rev-sub-mid" class="sub-panel">
+<div id="rev-sub-mid" class="sub-panel active">
 <div class="panel"><h2>📊 Most Likely — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-mid"></table></div></div>
 <div class="panel"><h2>📊 Most Likely — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-mid"></table></div></div>
 </div>
@@ -532,14 +532,14 @@ body.ai-open .ai-drawer{right:0}
 </div>
 <div class="panel" style="margin-bottom:16px"><h2>% of Sales</h2><div class="fg"><div class="fgi"><label>Service %</label><input type="number" id="cfg-pct-service" value="{{PCT_SVC}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Warranty %</label><input type="number" id="cfg-pct-warranty" value="{{PCT_WAR}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Inv Prov %</label><input type="number" id="cfg-pct-invprov" value="{{PCT_INV}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Net Ops %</label><input type="number" id="cfg-pct-netops" value="{{PCT_NET}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Other COS %</label><input type="number" id="cfg-pct-othercos" value="{{PCT_OCOS}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Sales %</label><input type="number" id="cfg-pct-sales" value="{{PCT_SALES}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>Mktg %</label><input type="number" id="cfg-pct-mktg" value="{{PCT_MKTG}}" step="0.5" oninput="recalcAll()"/></div><div class="fgi"><label>G&amp;A %</label><input type="number" id="cfg-pct-ga" value="{{PCT_GA}}" step="0.5" oninput="recalcAll()"/></div></div></div>
 <div class="ss" id="pnl-sub-tabs">
-<button class="active" onclick="switchPnlScen('low',this)">📉 Low</button>
-<button onclick="switchPnlScen('mid',this)">📊 Most Likely</button>
+<button onclick="switchPnlScen('low',this)">📉 Low</button>
+<button class="active" onclick="switchPnlScen('mid',this)">📊 Most Likely</button>
 <button onclick="switchPnlScen('high',this)">📈 High</button>
 </div>
-<div id="pnl-sub-low" class="sub-panel active">
+<div id="pnl-sub-low" class="sub-panel">
 <div class="panel"><h2>📉 P&amp;L — Low ($K)</h2><div class="tw"><table id="tbl-pnl-low"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-low"></table></div></div>
 </div>
-<div id="pnl-sub-mid" class="sub-panel">
+<div id="pnl-sub-mid" class="sub-panel active">
 <div class="panel"><h2>📊 P&amp;L — Most Likely ($K)</h2><div class="tw"><table id="tbl-pnl-mid"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-mid"></table></div></div>
 </div>
 <div id="pnl-sub-high" class="sub-panel">
@@ -550,7 +550,7 @@ body.ai-open .ai-drawer{right:0}
 <div id="tab-settings" class="tab-content">
 <div class="panel"><h2>&#x1F5C4; Supabase</h2><div class="fg"><div class="fgi"><label>URL</label><input type="text" id="cfg-supa-url" value="{{SB_URL}}" placeholder="https://xxx.supabase.co"/></div><div class="fgi"><label>Anon Key</label><input type="password" id="cfg-supa-key"/></div><div class="fgi"><label>Table</label><input type="text" id="cfg-supa-table" value="{{DB_TABLE}}"/></div><div class="fgi"><label>Product ID</label><input type="text" id="cfg-product-id" value="{{PRODUCT_ID}}"/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testConnection()">&#x1F50C; Test DB</button><button class="btn btn-secondary btn-sm" onclick="showSchema()">&#x1F4CB; SQL Schema</button></div></div>
 <div class="panel"><h2>&#x1F916; Claude AI Advisor</h2><div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.2);border-radius:8px">&#x2705; Stored in <strong>localStorage only</strong></div><div class="fg"><div class="fgi"><label>Worker Proxy URL</label><input type="text" id="cfg-ai-url" value="{{PROXY_URL}}" placeholder="https://xxx.workers.dev"/></div><div class="fgi"><label>Claude API Key</label><input type="password" id="cfg-ai-key" placeholder="sk-ant-..."/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testAI()">&#x1F916; Test AI</button></div></div>
-<div class="panel"><h2>Project Metadata</h2><div class="fg"><div class="fgi"><label>Project Name</label><input type="text" id="cfg-proj-name" value="{{PRODUCT_NAME}}" oninput="recalcAll()"/></div><div class="fgi"><label>Hub</label><input type="text" id="cfg-hub" value="{{HUB_SHORT}}" oninput="recalcAll()"/></div><div class="fgi"><label>Phase</label><select id="cfg-phase" onchange="recalcAll()"><option value="Ph1">Ph1 \u2014 Concept</option><option value="Ph2">Ph2 \u2014 Feasibility</option><option value="Ph3">Ph3 \u2014 Development</option><option value="Ph4">Ph4 \u2014 Launch</option><option value="Post-Launch">Post-Launch</option></select></div><div class="fgi"><label>Owner</label><input type="text" id="cfg-owner" value="{{OWNER}}" oninput="recalcAll()"/></div></div></div>
+<div class="panel"><h2>Project Metadata</h2><div class="fg"><div class="fgi"><label>Project Name</label><input type="text" id="cfg-proj-name" value="{{PRODUCT_NAME}}" oninput="recalcAll()"/></div><div class="fgi"><label>Hub</label><input type="text" id="cfg-hub" value="{{HUB_SHORT}}" oninput="recalcAll()"/></div><div class="fgi"><label>Phase</label><select id="cfg-phase" onchange="recalcAll()"><option value="Ph1">Ph1 — Concept</option><option value="Ph2">Ph2 — Feasibility</option><option value="Ph3">Ph3 — Development</option><option value="Ph4">Ph4 — Launch</option><option value="Post-Launch">Post-Launch</option></select></div><div class="fgi"><label>Owner</label><input type="text" id="cfg-owner" value="{{OWNER}}" oninput="recalcAll()"/></div></div></div>
 </div>
 <button class="ai-toggle" onclick="toggleAI()">&#x1F916;</button>
 <div class="ai-drawer"><div class="ai-hd"><div class="at"><span style="font-size:1.4rem">&#x1F916;</span> ROI AI Advisor <span style="font-size:.7rem;color:var(--acc);font-weight:400">Claude</span></div><button class="ax" onclick="toggleAI()">&#x2715;</button></div><div class="ai-st"><div class="dot" id="aiDot"></div><span id="aiLbl">Not connected</span></div><div class="ai-qa"><button class="qb" onclick="quickAction('analyze')">&#x1F4CA; Analyze ROI</button><button class="qb" onclick="quickAction('gonogo')">&#x1F3AF; Go/No-Go</button><button class="qb" onclick="quickAction('risk')">&#x1F4C9; Risk Assessment</button><button class="qb" onclick="quickAction('compare')">&#x1F504; Scenario Compare</button><button class="qb" onclick="quickAction('optimize')">&#x1F4A1; Optimization</button><button class="qb" onclick="quickAction('exec')">&#x1F4CB; Exec Summary</button></div><div class="ai-msgs" id="aiMsgs"><div class="msg-s">Configure Worker URL &amp; API key in Settings, then ask me anything!</div></div><div class="ai-inp"><textarea id="aiIn" rows="1" placeholder="Ask about this ROI..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea><button onclick="sendAIMessage()" id="aiSend">&#x27A4;</button></div></div>
