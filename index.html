@@ -237,7 +237,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
   </div>
   <div class="step-panel" id="step3">
     <div class="form-card"><h2>&#x1F4DD; Generated Code</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">SQL + HTML ready for deployment.</p>
-      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px;"><input type="checkbox" id="chkRegisterPortfolio" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" autocomplete="off"/><label for="chkRegisterPortfolio" style="font-size:12px;cursor:pointer;color:var(--ink);">Register to Portfolio Dashboard</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
+      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px"><input type="checkbox" id="chkRP" checked style="width:16px;height:16px"/><label for="chkRP" style="font-size:12px;cursor:pointer">Register to Portfolio</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
       <div><div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div><div class="code-block" id="codeOutput"></div></div></div>
       <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">⚡ Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next →</button></div></div>
       <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Next: Deploy →</button></div>
@@ -768,21 +768,7 @@ async function autoProvision(bp,sql,html){
   log('═══════════════════════════════════════','info');log('🎉 Done!','success');
   log('🔗 <a href="'+hubUrl+'" target="_blank" style="color:var(--accent);">'+hubUrl+'</a>','success');
   log('🔑 Token: <strong style="color:var(--amber);">'+bp.access_token+'</strong>','info');
-  // Register to Portfolio
-  var regChk=document.getElementById('chkRegisterPortfolio');
-  if(regChk&&regChk.checked){
-    log('📊 Registering to Portfolio…');
-    try{
-      var hubRec={hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code||'',bu:bp.bu||'Semiconductor',phase:bp.phase||'Development',owner:bp.owner||'Jefferson Xu',hub_url:hubUrl,status:'live',roi_status:'pending',npv:null,irr:null,dev_cost:bp.dev_cost||null,created_at:new Date().toISOString()};
-      if(CONFIG.supabaseUrl&&CONFIG.supabaseAnonKey){
-        try{var rr=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_hub_registry',{method:'POST',headers:{'Content-Type':'application/json','apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=representation'},body:JSON.stringify(hubRec)});
-        if(rr.ok)log('✅ Portfolio registered (Supabase)','success');
-        else log('⚠️ Supabase registry not available — saved locally','warn');}catch(e2){log('⚠️ Supabase error — saved locally','warn');}
-      }
-      var lh=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');lh.push(hubRec);localStorage.setItem('roiHubRegistry',JSON.stringify(lh));
-      log('✅ Portfolio registered','success');
-    }catch(e3){log('⚠️ Portfolio registration: '+e3.message,'warn');}
-  }else{log('ℹ️ Portfolio registration skipped','info');}
+  var rC=document.getElementById('chkRP');if(rC&&rC.checked){var hr={hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code||'',bu:bp.bu||'Semiconductor',phase:bp.phase||'Development',owner:bp.owner||'Jefferson Xu',hub_url:hubUrl,status:'live',created_at:new Date().toISOString()};var lh=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');var ei=lh.findIndex(function(x){return x.hub_id===bp.hub_id;});if(ei>=0)lh.splice(ei,1);lh.push(hr);localStorage.setItem('roiHubRegistry',JSON.stringify(lh));log('Portfolio registered','success');}else{log('Portfolio skipped','info');}
 
   document.getElementById('autoProvisionDone').style.display='flex';document.getElementById('hubLiveUrl').href=hubUrl;document.getElementById('hubLiveUrl').textContent=hubUrl;
   loadStudioRegistry();
@@ -807,6 +793,7 @@ function renderValidation(bp){document.getElementById('validationContent').inner
 
 function finishWizard(){const bp=pipeline.blueprint;if(!bp){toast('No blueprint','error');return;}
   const hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
+  const _di=hubs.findIndex(h=>h.hub_id===bp.hub_id);if(_di>=0)hubs.splice(_di,1);
   hubs.push({hub_id:bp.hub_id,hub_name:bp.hub_name,product_code:bp.product_code,bu:bp.bu,phase:bp.phase,owner:bp.owner,
     db_table:bp.db_table,access_token:bp.access_token,hub_url:'https://'+CONFIG.githubUser+'.github.io/'+bp.hub_id+'-roi-hub/?access='+encodeURIComponent(bp.access_token),
     status:'live',created_at:new Date().toISOString()});
@@ -821,16 +808,14 @@ async function loadStudioRegistry(){try{if(!CONFIG.supabaseUrl||!CONFIG.supabase
   if(r.ok){const reg=await r.json();const local=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');
   reg.forEach(h=>{if(!local.find(l=>l.hub_id===h.hub_id))local.push(h);});localStorage.setItem('roiHubRegistry',JSON.stringify(local));}}catch(e){console.warn('Registry:',e);}}
 
-function loadHubGrid(){const hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');const grid=document.getElementById('hubGrid');
-  if(!hubs.length){grid.innerHTML='<div style="color:var(--muted);padding:40px;text-align:center;grid-column:1/-1;">No ROI Hubs yet. Create one in ROI Studio.</div>';return;}
-  let html='';hubs.forEach((h,i)=>{const st=h.status||'live';
-    html+=`<div class="hub-card"><h3>${esc(h.hub_name||h.hub_id)}</h3><span class="hub-status ${st}">${st}</span>
-    <div class="hc-meta"><span>📦 ${esc(h.product_code||'—')}</span><span>🏢 ${esc(h.bu||'—')}</span><span>👤 ${esc(h.owner||'—')}</span>
-    <span>🗄️ ${esc(h.db_table||'—')}</span><span>📅 ${h.created_at?new Date(h.created_at).toLocaleDateString():'—'}</span></div>
-    <div class="hc-actions">${h.hub_url?`<a class="btn-primary" href="${esc(h.hub_url)}" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px;">🔗 Open</a>`:''}
-    ${st==='live'?`<button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="archiveHub(${i})">📁 Archive</button>`:`<button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="resumeHub(${i})">▶ Resume</button>`}
-    <button class="btn-danger" style="font-size:11px;padding:6px 12px;" onclick="deleteHub(${i})">🗑️ Delete</button></div></div>`;});
-  grid.innerHTML=html;}
+function loadHubGrid(){var hubs=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');var g=document.getElementById('hubGrid');
+  if(!hubs.length){g.innerHTML='<div style="padding:40px;text-align:center;color:var(--muted)">No hubs yet.</div>';return;}
+  window._hl=hubs;var o='<div style="display:flex;gap:12px;align-items:center;margin-bottom:20px"><label style="font-weight:700">Select Hub:</label><select id="hSel" onchange="onHS()" style="padding:10px;min-width:260px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)"><option value="">Choose...</option>';
+  hubs.forEach(function(h,i){o+='<option value="'+i+'">'+esc(h.hub_name||h.hub_id)+'</option>';});
+  o+='</select></div><div id="hDet"></div>';g.innerHTML=o;}
+function onHS(){var s=document.getElementById('hSel'),d=document.getElementById('hDet');if(!s.value){d.innerHTML='';return;}
+  var h=window._hl[+s.value];if(!h)return;var st=h.status||'live';
+  d.innerHTML='<div class="hub-card" style="max-width:520px"><h3>'+esc(h.hub_name||h.hub_id)+'</h3><span class="hub-status '+st+'">'+st.toUpperCase()+'</span><div class="hc-meta"><span>'+esc(h.product_code||'')+'</span><span>'+esc(h.bu||'')+'</span><span>'+esc(h.owner||'')+'</span><span>'+(h.created_at?new Date(h.created_at).toLocaleDateString():'')+'</span></div><div class="hc-actions">'+(h.hub_url?'<a class="btn-primary" href="'+esc(h.hub_url)+'" target="_blank" style="text-decoration:none;font-size:11px;padding:6px 12px">Open</a>':'')+'<button class="btn-ghost" style="font-size:11px;padding:6px 12px" onclick="archiveHub('+s.value+')">Archive</button><button class="btn-danger" style="font-size:11px;padding:6px 12px" onclick="deleteHub('+s.value+')">Delete</button></div></div>';}
 
 function archiveHub(i){const h=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');if(h[i]){h[i].status='archived';localStorage.setItem('roiHubRegistry',JSON.stringify(h));loadHubGrid();toast('Archived','success');}}
 function resumeHub(i){const h=JSON.parse(localStorage.getItem('roiHubRegistry')||'[]');if(h[i]){h[i].status='live';localStorage.setItem('roiHubRegistry',JSON.stringify(h));loadHubGrid();toast('Resumed','success');}}
