@@ -159,12 +159,12 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
     <h2>⚙️ Credentials &amp; Configuration</h2>
     <div class="field-grid">
       <div><label>Supabase URL</label><input id="cfgSbUrl" placeholder="https://xxx.supabase.co"/></div>
-      <div><label>Supabase Anon Key</label><input id="cfgSbKey" type="password" placeholder="eyJ..."/></div>
-      <div><label>GitHub Token</label><input id="cfgGhToken" type="password" placeholder="ghp_..."/></div>
+      <div><label>Supabase Anon Key</label><input id="cfgSbKey" type="password" autocomplete="off" placeholder="eyJ..."/></div>
+      <div><label>GitHub Token</label><input id="cfgGhToken" type="password" autocomplete="off" placeholder="ghp_..."/></div>
       <div><label>GitHub Username</label><input id="cfgGhUser" value="xujeffersoninusa"/></div>
       <div><label>Claude Proxy URL</label><input id="cfgProxyUrl" placeholder="https://xxx.workers.dev"/></div>
-      <div><label>Claude API Key</label><input id="cfgAiKey" type="password" placeholder="sk-ant-..."/></div>
-      <div><label>Supabase Mgmt Token</label><input id="cfgMgmtToken" type="password" placeholder="sbp_..."/></div>
+      <div><label>Claude API Key</label><input id="cfgAiKey" type="password" autocomplete="off" placeholder="sk-ant-..."/></div>
+      <div><label>Supabase Mgmt Token</label><input id="cfgMgmtToken" type="password" autocomplete="off" placeholder="sbp_..."/></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:16px;">
       <button class="btn-primary" onclick="saveSettings()">&#x1F4BE; Save</button>
@@ -237,7 +237,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
   </div>
   <div class="step-panel" id="step3">
     <div class="form-card"><h2>&#x1F4DD; Generated Code</h2><p style="color:var(--muted);font-size:13px;margin-bottom:16px;">SQL + HTML ready for deployment.</p>
-      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px;"><input type="checkbox" id="chkRegisterPortfolio" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/><label for="chkRegisterPortfolio" style="font-size:12px;cursor:pointer;color:var(--ink);">Register to Portfolio Dashboard</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
+      <div class="spec-grid"><div><div class="spec-section"><h3>&#x26A1; Auto-Provision</h3><p style="font-size:12px;color:var(--muted);margin-bottom:12px;">SQL → GitHub repo → Upload → Pages — fully automatic</p><div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.2);border-radius:8px;"><input type="checkbox" id="chkRegisterPortfolio" checked style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;" autocomplete="off"/><label for="chkRegisterPortfolio" style="font-size:12px;cursor:pointer;color:var(--ink);">Register to Portfolio Dashboard</label></div><button class="auto-btn" onclick="startAutoProvision()">&#x26A1; Auto-Provision Now</button></div><div class="spec-section"><h3>Or download manually</h3><div style="display:flex;flex-direction:column;gap:8px;"><button class="btn-ghost" onclick="downloadFile('sql')">⬇ Download SQL</button><button class="btn-ghost" onclick="downloadFile('html')">⬇ Download HTML</button></div></div></div>
       <div><div class="code-tabs"><span class="code-tab active" data-tab="sql" onclick="switchCodeTab('sql')">SQL Schema</span><span class="code-tab" data-tab="html" onclick="switchCodeTab('html')">HTML App</span><button class="copy-btn" onclick="copyCode()">&#x1F4CB; Copy</button></div><div class="code-block" id="codeOutput"></div></div></div>
       <div id="autoProvisionLog" style="display:none;margin-top:16px;"><div style="font-weight:800;font-size:13px;margin-bottom:10px;">⚡ Auto-Provisioning Log</div><div class="auto-log" id="autoLog"></div><div class="done-banner" id="autoProvisionDone"><div class="db-icon">&#x1F389;</div><div class="db-text"><div class="db-title">ROI Hub is live!</div><div class="db-url"><a id="hubLiveUrl" href="#" target="_blank">—</a></div></div><button class="btn-primary" onclick="goStep(4)">Next →</button></div></div>
       <div style="display:flex;gap:10px;margin-top:20px;"><button class="btn-ghost" onclick="goStep(2)">&#x2190; Back</button><button class="btn-primary" onclick="goStep(4)">Next: Deploy →</button></div>
@@ -600,7 +600,7 @@ function saveSettings(){
   closeSettings();toast('Credentials saved ✓','success');
 }
 async function testConnection(){
-  try{const r=await fetch(CONFIG.supabaseUrl+'/rest/v1/?apikey='+CONFIG.supabaseAnonKey,{headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey}});
+  try{const r=await fetch(CONFIG.supabaseUrl+'/rest/v1/product_roi?select=count',{headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey}});
   if(r.ok)toast('Connected to Supabase ✓','success');else toast('Connection failed: HTTP '+r.status,'error');}catch(e){toast('Error: '+e.message,'error');}
 }
 
