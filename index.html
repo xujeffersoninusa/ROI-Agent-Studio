@@ -238,8 +238,8 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
         <div><label>WACC %</label><input id="iWacc" type="number" value="12" step="0.5"/></div>
         <div><label>Burden %</label><input id="iBurden" type="number" value="50" step="1"/></div>
         <div><label>Cannibal DT %</label><input id="iCannibal" type="number" value="0" step="1"/></div>
-        <div><label>Default ASP ($K)</label><input id="iASP" type="number" value="500" step="10"/></div>
-        <div><label>Default COGS ($K)</label><input id="iCOGS" type="number" value="200" step="10"/></div>
+        <div><label>Default ASP ($)</label><input id="iASP" type="number" value="500" step="10"/></div>
+        <div><label>Default COGS ($)</label><input id="iCOGS" type="number" value="200" step="10"/></div>
       </div>
       <h3 style="margin-top:20px;">% of Sales Defaults</h3>
       <div class="field-grid" style="grid-template-columns:repeat(4,1fr);">
@@ -491,7 +491,7 @@ body.ai-open .ai-drawer{right:0}
 <button class="btn btn-secondary btn-sm" onclick="loadSnapshot('dev')">📂 Load</button>
 <button class="btn btn-secondary btn-sm" onclick="deleteSnapshot('dev')">🗑️ Delete</button>
 </div>
-<div class="panel"><h2>&#x1F4B0; Development Cost ($K)</h2><p style="color:var(--muted);font-size:.8rem;margin-bottom:14px">Enter annual R&amp;D investment. Burden auto-calculated.</p><div class="tw"><table id="tbl-dev"></table></div></div></div>
+<div class="panel"><h2>&#x1F4B0; Development Cost ({{CURRENCY}})</h2><p style="color:var(--muted);font-size:.8rem;margin-bottom:14px">Enter annual R&amp;D investment. Burden auto-calculated.</p><div class="tw"><table id="tbl-dev"></table></div></div></div>
 <div id="tab-revenue" class="tab-content">
 <div class="tab-settings-row" style="flex-wrap:wrap;gap:12px;">
 <div style="display:flex;align-items:center;gap:6px"><span style="font-size:.72rem;color:#e74c3c">&#x1F4C9; Low</span><label>ASP</label><input type="number" id="cfg-default-asp-low" value="{{DEFAULT_ASP}}" step="1" style="width:75px" oninput="applyDefaultASPCOGS('low')"/><label>COGS</label><input type="number" id="cfg-default-cogs-low" value="{{DEFAULT_COGS}}" step="1" style="width:75px" oninput="applyDefaultASPCOGS('low')"/></div>
@@ -512,15 +512,15 @@ body.ai-open .ai-drawer{right:0}
 </div>
 <div id="rev-sub-low" class="sub-panel">
 <div class="panel"><h2>📉 Low — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-low"></table></div></div>
-<div class="panel"><h2>📉 Low — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-low"></table></div></div>
+<div class="panel"><h2>📉 Low — Cannibalized Sales ({{CURRENCY}})</h2><div class="tw"><table id="tbl-can-low"></table></div></div>
 </div>
 <div id="rev-sub-mid" class="sub-panel active">
 <div class="panel"><h2>📊 Most Likely — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-mid"></table></div></div>
-<div class="panel"><h2>📊 Most Likely — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-mid"></table></div></div>
+<div class="panel"><h2>📊 Most Likely — Cannibalized Sales ({{CURRENCY}})</h2><div class="tw"><table id="tbl-can-mid"></table></div></div>
 </div>
 <div id="rev-sub-high" class="sub-panel">
 <div class="panel"><h2>📈 High — Revenue &amp; COGS</h2><div class="tw"><table id="tbl-rev-high"></table></div></div>
-<div class="panel"><h2>📈 High — Cannibalized Sales ($K)</h2><div class="tw"><table id="tbl-can-high"></table></div></div>
+<div class="panel"><h2>📈 High — Cannibalized Sales ({{CURRENCY}})</h2><div class="tw"><table id="tbl-can-high"></table></div></div>
 </div>
 </div>
 <div id="tab-pnl" class="tab-content">
@@ -537,16 +537,16 @@ body.ai-open .ai-drawer{right:0}
 <button onclick="switchPnlScen('high',this)">📈 High</button>
 </div>
 <div id="pnl-sub-low" class="sub-panel">
-<div class="panel"><h2>📉 P&amp;L — Low ($K)</h2><div class="tw"><table id="tbl-pnl-low"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-low"></table></div></div>
+<div class="panel"><h2>📉 P&amp;L — Low ({{CURRENCY}})</h2><div class="tw"><table id="tbl-pnl-low"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-low"></table></div></div>
 </div>
 <div id="pnl-sub-mid" class="sub-panel active">
-<div class="panel"><h2>📊 P&amp;L — Most Likely ($K)</h2><div class="tw"><table id="tbl-pnl-mid"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-mid"></table></div></div>
+<div class="panel"><h2>📊 P&amp;L — Most Likely ({{CURRENCY}})</h2><div class="tw"><table id="tbl-pnl-mid"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-mid"></table></div></div>
 </div>
 <div id="pnl-sub-high" class="sub-panel">
-<div class="panel"><h2>📈 P&amp;L — High ($K)</h2><div class="tw"><table id="tbl-pnl-high"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-high"></table></div></div>
+<div class="panel"><h2>📈 P&amp;L — High ({{CURRENCY}})</h2><div class="tw"><table id="tbl-pnl-high"></table></div><div class="tw" style="margin-top:10px"><table id="tbl-met-high"></table></div></div>
 </div>
 </div>
-<div id="tab-sensitivity" class="tab-content"><div class="panel"><h2>NPV Sensitivity ($K)</h2><div class="sm"><table id="tbl-snpv"></table></div></div><div class="panel"><h2>IRR Sensitivity</h2><div class="sm"><table id="tbl-sirr"></table></div></div></div>
+<div id="tab-sensitivity" class="tab-content"><div class="panel"><h2>NPV Sensitivity ({{CURRENCY}})</h2><div class="sm"><table id="tbl-snpv"></table></div></div><div class="panel"><h2>IRR Sensitivity</h2><div class="sm"><table id="tbl-sirr"></table></div></div></div>
 <div id="tab-settings" class="tab-content">
 <div class="panel"><h2>&#x1F5C4; Supabase</h2><div class="fg"><div class="fgi"><label>URL</label><input type="text" id="cfg-supa-url" value="{{SB_URL}}" placeholder="https://xxx.supabase.co"/></div><div class="fgi"><label>Anon Key</label><input type="password" id="cfg-supa-key"/></div><div class="fgi"><label>Table</label><input type="text" id="cfg-supa-table" value="{{DB_TABLE}}"/></div><div class="fgi"><label>Product ID</label><input type="text" id="cfg-product-id" value="{{PRODUCT_ID}}"/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testConnection()">&#x1F50C; Test DB</button><button class="btn btn-secondary btn-sm" onclick="showSchema()">&#x1F4CB; SQL Schema</button></div></div>
 <div class="panel"><h2>&#x1F916; Claude AI Advisor</h2><div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;padding:10px;background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.2);border-radius:8px">&#x2705; Stored in <strong>localStorage only</strong></div><div class="fg"><div class="fgi"><label>Worker Proxy URL</label><input type="text" id="cfg-ai-url" value="{{PROXY_URL}}" placeholder="https://xxx.workers.dev"/></div><div class="fgi"><label>Claude API Key</label><input type="password" id="cfg-ai-key" placeholder="sk-ant-..."/></div></div><div style="margin-top:12px;display:flex;gap:10px"><button class="btn btn-primary btn-sm" onclick="saveAllSettings()">&#x1F4BE; Save to Browser</button><button class="btn btn-secondary btn-sm" onclick="testAI()">&#x1F916; Test AI</button></div></div>
@@ -559,6 +559,7 @@ body.ai-open .ai-drawer{right:0}
 <__SCRIPT__>
 "use strict";
 var PRODUCT_TAG="{{PRODUCT_SHORT}}";
+var CURRENCY_UNIT="{{CURRENCY}}";
 var N={{NUM_YEARS}},YL=(function(){var a=[];for(var i=1;i<=N;i++)a.push("Y"+i);return a;})();
 var ENG_CATS=["Engineering Labor","IDC/Low-Cost Labor","Contractors","Materials/NRE"];
 var DC_INPUT=ENG_CATS.concat(["Applications","GSO","Capital Equipment"]);
@@ -570,7 +571,7 @@ var CAN={low:{revenue:Z()},mid:{revenue:Z()},high:{revenue:Z()}};
 var devC=JSON.parse(JSON.stringify(DD)),revD=JSON.parse(JSON.stringify(DR)),canD=JSON.parse(JSON.stringify(CAN));
 var activeRS="low",activePS="mid",activeDashScen="mid",aiHist=[],aiOn=false;
 var fmt=function(n){return (n==null||!isFinite(n))?"—":n.toLocaleString("en-US",{maximumFractionDigits:0})};
-var fD=function(n){return (n==null||!isFinite(n))?"—":"$"+fmt(n)};
+var fD=function(n){if(n==null||!isFinite(n))return"—";var cu=typeof CURRENCY_UNIT!=="undefined"?CURRENCY_UNIT:"$";if(cu==="$M")return"$"+(n/1000).toFixed(1)+"M";if(cu==="$K")return"$"+fmt(n)+"K";return"$"+fmt(n);};
 var fK=function(n){return (n==null||!isFinite(n))?"—":"$"+fmt(n)+"K"};
 var fM=function(n){return (n==null||!isFinite(n))?"—":"$"+(n/1000).toFixed(1)+"M"};
 var fP=function(n){return (n==null||!isFinite(n))?"—":(n*100).toFixed(1)+"%"};
@@ -602,7 +603,7 @@ h+='<tr class="total-row"><td>TOTAL DEV COST</td>';var gt=0;for(var i=0;i<N;i++)
 function onDev(el){var cat=el.dataset.cat;if(!devC[cat])devC[cat]=new Array(N).fill(0);devC[cat][parseInt(el.dataset.yr)]=parseFloat(el.value)||0;compBurden();renderDev();
 refreshSnapSelects();
 document.getElementById("main-title").innerHTML="ROI <span>Hub</span> OS &#8212; "+PRODUCT_TAG;recalcAll()}
-function renderRev(){var scenarios=["low","mid","high"];scenarios.forEach(function(scKey){var sc=revD[scKey];var tblId="tbl-rev-"+scKey;var tbl=document.getElementById(tblId);if(!tbl)return;var aspEl=document.getElementById("cfg-default-asp-"+scKey);var cogsEl=document.getElementById("cfg-default-cogs-"+scKey);var defASP=aspEl?parseFloat(aspEl.value)||0:0;var defCOGS=cogsEl?parseFloat(cogsEl.value)||0:0;for(var fi=0;fi<N;fi++){sc.asp[fi]=defASP;sc.cogs[fi]=defCOGS;}var h="<tr><th>Metric</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr>";h+='<tr><td>Units</td>';for(var i=0;i<N;i++)h+='<td><input type="number" value="'+sc.units[i]+'" data-scen="'+scKey+'" data-key="units" data-yr="'+i+'" onchange="onRev(this)"/></td>';h+="<td>"+fmt(sc.units.reduce(function(a,b){return a+b},0))+"</td></tr>";h+='<tr style="background:rgba(255,255,255,.03)"><td>ASP ($K) \u{1F512}</td>';for(var ai=0;ai<N;ai++)h+='<td style="color:var(--muted);font-style:italic">'+fD(defASP)+'</td>';h+='<td style="color:var(--muted);font-style:italic">'+fD(defASP)+'</td></tr>';h+='<tr style="background:rgba(255,255,255,.03)"><td>Unit COGS ($K) \u{1F512}</td>';for(var ci=0;ci<N;ci++)h+='<td style="color:var(--muted);font-style:italic">'+fD(defCOGS)+'</td>';h+='<td style="color:var(--muted);font-style:italic">'+fD(defCOGS)+'</td></tr>';var rv=sc.units.map(function(u,i){return u*sc.asp[i]});var cg=sc.units.map(function(u,i){return u*sc.cogs[i]});var mg=rv.map(function(r,i){return r-cg[i]});h+='<tr class="subtotal-row"><td>Revenue ($K)</td>';for(var ri=0;ri<N;ri++){h+="<td>"+fD(rv[ri]||0)+"</td>"}h+="<td>"+fD(rv.slice(0,N).reduce(function(a,b){return a+b},0))+"</td></tr>";h+='<tr class="highlight-row"><td>Std Margin ($K)</td>';for(var mi=0;mi<N;mi++){h+="<td>"+fD(mg[mi]||0)+"</td>"}h+="<td>"+fD(mg.slice(0,N).reduce(function(a,b){return a+b},0))+"</td></tr>";tbl.innerHTML=h});renderCan();recalcAll()}
+function renderRev(){var scenarios=["low","mid","high"];scenarios.forEach(function(scKey){var sc=revD[scKey];var tblId="tbl-rev-"+scKey;var tbl=document.getElementById(tblId);if(!tbl)return;var aspEl=document.getElementById("cfg-default-asp-"+scKey);var cogsEl=document.getElementById("cfg-default-cogs-"+scKey);var defASP=aspEl?parseFloat(aspEl.value)||0:0;var defCOGS=cogsEl?parseFloat(cogsEl.value)||0:0;for(var fi=0;fi<N;fi++){sc.asp[fi]=defASP;sc.cogs[fi]=defCOGS;}var cu=typeof CURRENCY_UNIT!=="undefined"?CURRENCY_UNIT:"$";var h="<tr><th>Metric</th>";YL.forEach(function(y){h+="<th>"+y+"</th>"});h+="<th>TOTAL</th></tr>";h+='<tr><td>Units</td>';for(var i=0;i<N;i++)h+='<td><input type="number" value="'+sc.units[i]+'" data-scen="'+scKey+'" data-key="units" data-yr="'+i+'" onchange="onRev(this)"/></td>';h+="<td>"+fmt(sc.units.reduce(function(a,b){return a+b},0))+"</td></tr>";h+='<tr style="background:rgba(255,255,255,.03)"><td>ASP ('+cu+') \u{1F512}</td>';for(var ai=0;ai<N;ai++)h+='<td style="color:var(--muted);font-style:italic">'+fD(defASP)+'</td>';h+='<td style="color:var(--muted);font-style:italic">'+fD(defASP)+'</td></tr>';h+='<tr style="background:rgba(255,255,255,.03)"><td>Unit COGS ('+cu+') \u{1F512}</td>';for(var ci=0;ci<N;ci++)h+='<td style="color:var(--muted);font-style:italic">'+fD(defCOGS)+'</td>';h+='<td style="color:var(--muted);font-style:italic">'+fD(defCOGS)+'</td></tr>';var rv=sc.units.map(function(u,i){return u*sc.asp[i]});var cg=sc.units.map(function(u,i){return u*sc.cogs[i]});var mg=rv.map(function(r,i){return r-cg[i]});h+='<tr class="subtotal-row"><td>Revenue ('+cu+')</td>';for(var ri=0;ri<N;ri++){h+="<td>"+fD(rv[ri]||0)+"</td>"}h+="<td>"+fD(rv.slice(0,N).reduce(function(a,b){return a+b},0))+"</td></tr>";h+='<tr class="highlight-row"><td>Std Margin ('+cu+')</td>';for(var mi=0;mi<N;mi++){h+="<td>"+fD(mg[mi]||0)+"</td>"}h+="<td>"+fD(mg.slice(0,N).reduce(function(a,b){return a+b},0))+"</td></tr>";tbl.innerHTML=h});renderCan();recalcAll()}
 
 function onRev(el){var sc=el.dataset.scen||"mid";var key=el.dataset.key;var yr=parseInt(el.dataset.yr);revD[sc][key][yr]=parseFloat(el.value)||0;renderRev()}
 function applyDefaultASPCOGS(sc){if(!sc){["low","mid","high"].forEach(applyDefaultASPCOGS);return;}var aspEl=document.getElementById("cfg-default-asp-"+sc);var cogsEl=document.getElementById("cfg-default-cogs-"+sc);var defASP=aspEl?parseFloat(aspEl.value)||0:0;var defCOGS=cogsEl?parseFloat(cogsEl.value)||0:0;for(var i=0;i<N;i++){revD[sc].asp[i]=defASP;revD[sc].cogs[i]=defCOGS;}renderRev();}
@@ -843,7 +844,7 @@ function generateHTML(bp){
     '{{HUB_SHORT}}':bp.hub_short,'{{DB_TABLE}}':bp.db_table,'{{ACCESS_TOKEN}}':bp.access_token,
     '{{SB_URL}}':CONFIG.supabaseUrl||'','{{PROXY_URL}}':CONFIG.proxyUrl||'',
     '{{WACC}}':String(bp.wacc),'{{BURDEN}}':String(bp.burden),'{{CANNIBAL_DT}}':String(bp.cannibal_dt),
-    '{{NUM_YEARS}}':String(bp.years),'{{DEFAULT_ASP}}':String(bp.default_asp),'{{DEFAULT_COGS}}':String(bp.default_cogs),
+    '{{NUM_YEARS}}':String(bp.years),'{{DEFAULT_ASP}}':String(bp.default_asp),'{{DEFAULT_COGS}}':String(bp.default_cogs),'{{CURRENCY}}':bp.currency||'$',
     '{{OWNER}}':bp.owner,'{{PCT_SVC}}':String(bp.pct_svc),'{{PCT_WAR}}':String(bp.pct_war),'{{PCT_INV}}':String(bp.pct_inv),
     '{{PCT_NET}}':String(bp.pct_net),'{{PCT_OCOS}}':String(bp.pct_ocos),'{{PCT_SALES}}':String(bp.pct_sales),
     '{{PCT_MKTG}}':String(bp.pct_mktg),'{{PCT_GA}}':String(bp.pct_ga),'{{PHASE}}':bp.phase};
