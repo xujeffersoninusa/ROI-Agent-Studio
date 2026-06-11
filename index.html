@@ -236,7 +236,7 @@ html,body{margin:0;padding:0;font-family:'Segoe UI',system-ui,Arial,sans-serif;c
       <h3 style="margin-top:20px;">Financial Defaults</h3>
       <div class="field-grid" style="grid-template-columns:repeat(3,1fr);">
         <div><label>WACC %</label><input id="iWacc" type="number" value="12" step="0.5"/></div>
-        <div><label>Burden %</label><input id="iBurden" type="number" value="30" step="1"/></div>
+        <div><label>Burden %</label><input id="iBurden" type="number" value="50" step="1"/></div>
         <div><label>Cannibal DT %</label><input id="iCannibal" type="number" value="0" step="1"/></div>
         <div><label>Default ASP ($K)</label><input id="iASP" type="number" value="500" step="10"/></div>
         <div><label>Default COGS ($K)</label><input id="iCOGS" type="number" value="200" step="10"/></div>
@@ -652,7 +652,7 @@ async function loadSnapshot(type){var cfg=getSupaCfg();var sel=document.getEleme
 async function autoLoadSnapshot(type){var sel=document.getElementById("snap-sel-"+type);if(!sel||sel.value==="")return;loadSnapshot(type)}
 async function deleteSnapshot(type){var cfg=getSupaCfg();var sel=document.getElementById("snap-sel-"+type);if(!sel||!sel.value){showToast("Select a snapshot first","error");return}if(!confirm("Delete this snapshot?"))return;try{var r=await fetch(cfg.url+"/rest/v1/roi_snapshots?id=eq."+sel.value,{method:"DELETE",headers:{"apikey":cfg.key,"Authorization":"Bearer "+cfg.key,"Prefer":"return=minimal"}});if(r.ok){showToast("\uD83D\uDDD1\uFE0F Snapshot deleted","success");refreshSnapSelects()}else throw new Error("HTTP "+r.status)}catch(e){showToast("Delete failed: "+e.message,"error")}}
 
-window.addEventListener("DOMContentLoaded",async function(){loadAllSettings();activeDashScen='mid';var phSel=document.getElementById("cfg-phase");if(phSel)phSel.value="Ph2";loadLocal();renderDev();refreshSnapSelects();document.getElementById("main-title").innerHTML="ROI <span>Hub</span> OS &#8212; "+PRODUCT_TAG;renderRev();var dashBtns=document.querySelectorAll('#dash-sub-tabs button');dashBtns.forEach(function(b){b.classList.remove('active')});var midBtn=dashBtns[1];if(midBtn)midBtn.classList.add('active');var u=document.getElementById("cfg-supa-url");var k=document.getElementById("cfg-supa-key");if(u&&u.value&&k&&k.value){try{await loadFromDB()}catch(e){console.warn("Auto-load failed:",e)}}renderPnl();renderSens();renderDash('mid');markClean()});
+window.addEventListener("DOMContentLoaded",async function(){loadAllSettings();activeDashScen='mid';var phSel=document.getElementById("cfg-phase");if(phSel)phSel.value="Ph2";loadLocal();renderDev();refreshSnapSelects();document.getElementById("main-title").innerHTML="ROI <span>Hub</span> OS &#8212; "+PRODUCT_TAG;renderRev();var dashBtns=document.querySelectorAll('#dash-sub-tabs button');dashBtns.forEach(function(b){b.classList.remove('active')});dashBtns.forEach(function(b){if(b.getAttribute('onclick')&&b.getAttribute('onclick').indexOf("'mid'")>-1)b.classList.add('active')});var u=document.getElementById("cfg-supa-url");var k=document.getElementById("cfg-supa-key");if(u&&u.value&&k&&k.value){try{await loadFromDB()}catch(e){console.warn("Auto-load failed:",e)}}renderPnl();renderSens();renderDash('mid');markClean()});
 </__SCRIPT__>
 </body>
 </html>
@@ -744,7 +744,7 @@ function generateBlueprint(){
   pipeline.blueprint={hub_id:slug,hub_name:name,hub_short:document.getElementById('iHub').value.trim()||slug,
     product_code:code,bu:team,phase:document.getElementById('iPhase').value,owner:document.getElementById('iOwner').value.trim(),
     years:parseInt(document.getElementById('iYears').value)||10,currency:document.getElementById('iCurrency').value,
-    wacc:parseFloat(document.getElementById('iWacc').value)||12,burden:parseFloat(document.getElementById('iBurden').value)||30,
+    wacc:parseFloat(document.getElementById('iWacc').value)||12,burden:parseFloat(document.getElementById('iBurden').value)||50,
     cannibal_dt:parseFloat(document.getElementById('iCannibal').value)||0,default_asp:parseFloat(document.getElementById('iASP').value)||500,
     default_cogs:parseFloat(document.getElementById('iCOGS').value)||200,
     pct_svc:parseFloat(document.getElementById('iPctSvc').value)||8,pct_war:parseFloat(document.getElementById('iPctWar').value)||3,
@@ -1117,6 +1117,7 @@ async function confirmDeleteHub(){
         {method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});
       console.log('[HubMgr] Step 1d:',r1d.status,(r1d.ok||r1d.status===204)?'\u2705 OK':'\u274C FAIL');
     }catch(e){console.error('[HubMgr] Step 1d error:',e);}
+    if(hub.product_code&&hub.product_code!==hubId){try{console.log('[HubMgr] Step 1e: Deleting roi_snapshots by product_code',hub.product_code);var r1e=await fetch(CONFIG.supabaseUrl+'/rest/v1/roi_snapshots?product_id=eq.'+encodeURIComponent(hub.product_code),{method:'DELETE',headers:{'apikey':CONFIG.supabaseAnonKey,'Authorization':'Bearer '+CONFIG.supabaseAnonKey,'Prefer':'return=minimal'}});console.log('[HubMgr] Step 1e:',r1e.status,(r1e.ok||r1e.status===204)?'\u2705 OK':'\u274C FAIL');}catch(e){console.error('[HubMgr] Step 1e error:',e);}}
   } else {console.warn('[HubMgr] Step 1 skipped (no db_table or Supabase config)');}
   /* Step 2: Delete GitHub repo */
   var repoName=hubId+'-roi-hub';
